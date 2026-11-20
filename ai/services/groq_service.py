@@ -13,7 +13,7 @@ class GroqService:
     and includes robust error handling and high-fidelity fallback generation.
     """
 
-    DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+    DEFAULT_MODEL = 'qwen/qwen3.8-27b'
 
     def __init__(self, api_key=None, model=None):
         self.api_key = api_key or getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')

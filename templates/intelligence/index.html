@@ -31,6 +31,7 @@
 
       <!-- Prominent News Search Bar -->
       <div class="search-bar-hero-wrapper">
+        <form action="{% url 'intelligence:advanced_search' %}" method="GET" class="search-form-hero" id="heroSearchForm">
         <div class="search-input-shell">
           <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <circle cx="11" cy="11" r="8"></circle>
@@ -40,6 +41,7 @@
           <input 
             type="text" 
             id="mainSearchInput" 
+            name="q"
             class="main-search-input" 
             placeholder="Search breaking dispatches, technologies, chips, quantum, macro trends..."
             aria-label="Search intelligence"
@@ -48,14 +50,14 @@
           >
 
           <div class="search-actions-right">
-            <button id="clearSearchBtn" class="clear-search-btn" aria-label="Clear search query" title="Clear search">
+            <button id="clearSearchBtn" class="clear-search-btn" type="button" aria-label="Clear search query" title="Clear search">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
             <span class="kbd-shortcut" title="Press / or Ctrl+K to search">/</span>
-            <button class="search-submit-btn" id="searchSubmitBtn" type="button" aria-label="Search">
+            <button class="search-submit-btn" id="searchSubmitBtn" type="submit" aria-label="Search">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
@@ -63,6 +65,7 @@
             </button>
           </div>
         </div>
+        </form>
 
         <!-- Category Filter Pills -->
         <nav class="category-filter-pills" aria-label="Category Filters">

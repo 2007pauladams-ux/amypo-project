@@ -21,45 +21,47 @@
     </p>
 
     <!-- Large Search Input Box -->
-    <div class="search-page-input-wrapper">
-      <div class="search-input-shell" style="padding: 0.5rem 0.6rem 0.5rem 1.6rem;">
-        <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width: 24px; height: 24px;">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input 
-          type="text" 
-          id="advancedSearchInput" 
-          class="main-search-input" 
-          placeholder="Search by topic, keyword, company, policy directive, or breaking event..."
-          value="{{ query|default:'' }}"
-          autocomplete="off"
-        >
-        <div class="search-actions-right">
-          <button id="advClearBtn" class="clear-search-btn" title="Clear search">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-          <span class="kbd-shortcut">/</span>
-          <button id="advSearchSubmitBtn" class="search-submit-btn">
-            <span>Query Intel</span>
-          </button>
+    <form action="{% url 'intelligence:advanced_search' %}" method="GET" id="advSearchForm">
+      <div class="search-page-input-wrapper">
+        <div class="search-input-shell" style="padding: 0.5rem 0.6rem 0.5rem 1.6rem;">
+          <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width: 24px; height: 24px;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            id="advancedSearchInput" 
+            name="q"
+            class="main-search-input" 
+            placeholder="Search by topic, keyword, company, policy directive, or breaking event..."
+            value="{{ query|default:'' }}"
+            autocomplete="off"
+          >
+          <div class="search-actions-right">
+            <button id="advClearBtn" type="button" class="clear-search-btn" title="Clear search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <span class="kbd-shortcut">/</span>
+            <button id="advSearchSubmitBtn" type="submit" class="search-submit-btn">
+              <span>Query Intel</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Suggested Keywords -->
+        <div class="suggested-queries-row">
+          <span class="suggest-label">Trending Inquiries:</span>
+          <button type="button" class="suggest-tag-btn" data-query="Neuromorphic AI">Neuromorphic AI</button>
+          <button type="button" class="suggest-tag-btn" data-query="Tokamak Fusion">Tokamak Fusion</button>
+          <button type="button" class="suggest-tag-btn" data-query="Silicon Photonics">Silicon Photonics</button>
+          <button type="button" class="suggest-tag-btn" data-query="Majorana Quantum">Majorana Quantum</button>
+          <button type="button" class="suggest-tag-btn" data-query="Sovereign AI">Sovereign AI</button>
+          <button type="button" class="suggest-tag-btn" data-query="Geneva AI Treaty">Geneva AI Treaty</button>
         </div>
       </div>
-
-      <!-- Quick Suggested Keywords -->
-      <div class="suggested-queries-row">
-        <span class="suggest-label">Trending Inquiries:</span>
-        <button class="suggest-tag-btn" data-query="Neuromorphic AI">Neuromorphic AI</button>
-        <button class="suggest-tag-btn" data-query="Tokamak Fusion">Tokamak Fusion</button>
-        <button class="suggest-tag-btn" data-query="Silicon Photonics">Silicon Photonics</button>
-        <button class="suggest-tag-btn" data-query="Majorana Quantum">Majorana Quantum</button>
-        <button class="suggest-tag-btn" data-query="Sovereign AI">Sovereign AI</button>
-        <button class="suggest-tag-btn" data-query="Geneva AI Treaty">Geneva AI Treaty</button>
-      </div>
-    </div>
   </div>
 
   <!-- Advanced Interactive Filters Bar -->
@@ -68,7 +70,7 @@
       <!-- Category Filter -->
       <div class="filter-group">
         <label for="filterCategory" class="filter-label">Domain / Category</label>
-        <select id="filterCategory" class="custom-select adv-filter-select">
+        <select id="filterCategory" name="category" class="custom-select adv-filter-select">
           <option value="all">All Domains</option>
           {% for cat in categories %}
             <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
@@ -79,7 +81,7 @@
       <!-- Date Filter -->
       <div class="filter-group">
         <label for="filterDate" class="filter-label">Time Window</label>
-        <select id="filterDate" class="custom-select adv-filter-select">
+        <select id="filterDate" name="date" class="custom-select adv-filter-select">
           <option value="all" {% if selected_date == 'all' %}selected{% endif %}>All Time</option>
           <option value="today" {% if selected_date == 'today' %}selected{% endif %}>Past 24 Hours</option>
           <option value="week" {% if selected_date == 'week' %}selected{% endif %}>Past 7 Days</option>
@@ -90,7 +92,7 @@
       <!-- Source Filter -->
       <div class="filter-group">
         <label for="filterSource" class="filter-label">Source Wire</label>
-        <select id="filterSource" class="custom-select adv-filter-select">
+        <select id="filterSource" name="source" class="custom-select adv-filter-select">
           <option value="all">All Sources</option>
           {% for src in sources %}
             <option value="{{ src }}" {% if selected_source == src %}selected{% endif %}>{{ src }}</option>
@@ -101,7 +103,7 @@
       <!-- Relevance / Sort Filter -->
       <div class="filter-group">
         <label for="filterSort" class="filter-label">Sort By</label>
-        <select id="filterSort" class="custom-select adv-filter-select">
+        <select id="filterSort" name="sort" class="custom-select adv-filter-select">
           <option value="relevance" {% if selected_sort == 'relevance' %}selected{% endif %}>Highest Impact Score</option>
           <option value="latest" {% if selected_sort == 'latest' %}selected{% endif %}>Latest Published</option>
           <option value="velocity" {% if selected_sort == 'velocity' %}selected{% endif %}>Trending Velocity</option>
@@ -110,11 +112,12 @@
     </div>
 
     <div class="adv-filters-right">
-      <button id="advResetFiltersBtn" class="btn-reset-filters" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+      <button type="button" id="advResetFiltersBtn" class="btn-reset-filters" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
         Reset Filters
       </button>
     </div>
   </div>
+  </form>
 
   <!-- Search Results Meta Bar -->
   <div class="search-results-meta">

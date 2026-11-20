@@ -796,10 +796,27 @@
     }
 
     suggestTags.forEach(btn => {
-      btn.addEventListener('click', () => {
-        advInput.value = btn.getAttribute('data-query');
-        runFilter();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tag = btn.getAttribute('data-query');
+        advInput.value = tag;
+        const advForm = document.getElementById('advSearchForm');
+        if (advForm) {
+          advForm.submit();
+        } else {
+          runFilter();
+        }
       });
+    });
+
+    advInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const advForm = document.getElementById('advSearchForm');
+        if (advForm) {
+          e.preventDefault();
+          advForm.submit();
+        }
+      }
     });
   }
 

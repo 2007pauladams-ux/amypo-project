@@ -54,6 +54,7 @@ def ask_ai_view(request):
     return render(request, 'intelligence/ask_ai.html', context)
 
 
+@csrf_exempt
 @require_POST
 def api_summarize(request):
     """
@@ -88,6 +89,7 @@ def api_summarize(request):
     return JsonResponse(result)
 
 
+@csrf_exempt
 @require_POST
 def api_chat(request):
     """
@@ -125,6 +127,7 @@ def api_chat(request):
     })
 
 
+@csrf_exempt
 @require_POST
 def api_rag_query(request):
     """
@@ -152,6 +155,7 @@ def api_rag_query(request):
     return JsonResponse(result)
 
 
+@csrf_exempt
 @require_POST
 def api_sentiment(request):
     """
@@ -201,6 +205,7 @@ def api_trend_intelligence(request):
     return JsonResponse({'status': 'success', 'trends_intelligence': all_results})
 
 
+@csrf_exempt
 @require_POST
 def api_faiss_reindex(request):
     """

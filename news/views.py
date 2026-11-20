@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count
 from django.views.decorators.http import require_GET, require_POST
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -168,17 +168,21 @@ def advanced_search_view(request):
         queryset = queryset.filter(published_at__gte=now - timezone.timedelta(days=30))
 
     # Sorting
-    if sort_by == 'impact':
+    if sort_by in ('impact', 'relevance'):
         queryset = queryset.order_by('-impact_score', '-published_at')
     elif sort_by == 'velocity':
-        queryset = queryset.order_by('-published_at')
+        queryset = queryset.order_by('-views_count', '-published_at')
     elif sort_by == 'oldest':
         queryset = queryset.order_by('published_at')
     else: # latest
         queryset = queryset.order_by('-published_at')
 
+    # Serialized articles for instant client-side interaction
+    articles_data = [a.to_dict() for a in queryset[:100]]
+    articles_json = json.dumps(articles_data)
+
     # Pagination
-    paginator = Paginator(queryset, 9)
+    paginator = Paginator(queryset, 12)
     try:
         articles_page = paginator.page(page)
     except PageNotAnInteger:
@@ -193,12 +197,19 @@ def advanced_search_view(request):
     context = {
         'query': query,
         'category_slug': category_slug,
+        'selected_category': category_slug or 'all',
         'source_id': source_id,
+        'selected_source': source_id or 'all',
         'sort_by': sort_by,
+        'selected_sort': sort_by or 'relevance',
         'date_filter': date_filter,
+        'selected_date': date_filter or 'all',
         'articles': articles_page,
+        'articles_json': articles_json,
         'total_results': paginator.count,
+        'categories': all_categories,
         'all_categories': all_categories,
+        'sources': [s.name for s in all_sources],
         'all_sources': all_sources,
         'breaking_news': breaking_news,
     }
@@ -305,6 +316,7 @@ def api_article_detail(request, slug):
     })
 
 
+@csrf_exempt
 @require_POST
 def api_bookmark_toggle(request, slug):
     """

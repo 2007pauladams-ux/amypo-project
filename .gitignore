@@ -1,0 +1,30 @@
+# Environment & Secret Variables
+.env
+.env.local
+.env.*.local
+
+# Databases
+*.sqlite3
+db.sqlite3
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
