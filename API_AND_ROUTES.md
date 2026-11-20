@@ -6,20 +6,20 @@ This document outlines all frontend user-facing routes, reusable Django template
 
 ## 1. Frontend Web Routes
 
-| Route | View Function | Template | Description |
-|---|---|---|---|
-| `/` | `views.index` | `templates/intelligence/index.html` | Primary homepage with hero radar, prominent news search bar, breakthrough spotlight story, telemetry cards, and live dispatches feed. |
-| `/dashboard/` | `views.dashboard` | `templates/intelligence/dashboard.html` | Comprehensive analyst dashboard with left command sidebar, KPI metrics, hot trending keywords, recent articles, and domain matrix sections. |
-| `/search/` | `views.advanced_search` | `templates/intelligence/search.html` | Advanced intelligence search interface with large search bar, trending query tags, domain/date/source/relevance filters, and interactive card results. |
-| `/trending/` | `views.trending_topics_view` | `templates/intelligence/trending.html` | Dedicated Trending Topics page spanning Technology, Business, Politics, Sports, Science, Entertainment with momentum meters, sparklines, and signal counts. |
-| `/summarizer/` | `views.ai_summarizer_view` | `templates/intelligence/summarizer.html` | AI News Summarizer interface accepting article URL or raw text with Short, Detailed, and Key Points formats, loading states, and clipboard copy. |
-| `/ask-ai/` | `views.ask_ai_view` | `templates/intelligence/ask_ai.html` | TrendBot interactive conversational AI assistant with preset inquiries, typing indicators, live chat bubbles, and auto-scroll. |
-| `/login/` | `views.login_view` | `templates/auth/login.html` | Secure terminal login with CSRF protection, password visibility toggle, error handling, and demo account credentials. |
-| `/register/` | `views.register_view` | `templates/auth/register.html` | New analyst registration page with validation, password confirmation, and automatic profile creation. |
-| `/logout/` | `views.logout_view` | *Redirects to `/`* | Closes user session and redirects to homepage with feedback toast. |
-| `/forgot-password/` | `views.forgot_password_view` | `templates/auth/forgot_password.html` | Password recovery interface for requesting encrypted reset tokens. |
-| `/profile/` | `views.user_profile_view` | `templates/intelligence/profile.html` | Analyst profile management, editable username/email/bio, domain preference checkboxes, and activity counters. |
-| `/saved/` | `views.saved_news_view` | `templates/intelligence/saved_news.html` | Dedicated saved intelligence library displaying user bookmarks with one-click remove and clear actions. |
+| Route | View Function | App & Namespace | Template | Description |
+|---|---|---|---|---|
+| `/` | `news_views.index_view` | `news:index` | `templates/intelligence/index.html` | Primary homepage with hero radar, prominent news search bar, breakthrough spotlight story, telemetry cards, and live dispatches feed. |
+| `/dashboard/` | `news_views.dashboard_view` | `news:dashboard` | `templates/intelligence/dashboard.html` | Comprehensive analyst dashboard with left command sidebar, KPI metrics, hot trending keywords, recent articles, and domain matrix sections. |
+| `/search/` | `news_views.advanced_search_view` | `news:advanced_search` | `templates/intelligence/search.html` | Advanced intelligence search interface with large search bar, trending query tags, domain/date/source/relevance filters, and interactive card results. |
+| `/trending/` | `trends_views.trending_topics_view` | `trends:trending` | `templates/intelligence/trending.html` | Dedicated Trending Topics page spanning Technology, Business, Politics, Sports, Science, Entertainment with momentum meters, sparklines, and signal counts. |
+| `/summarizer/` | `ai_views.summarizer_view` | `ai:ai_summarizer` | `templates/intelligence/summarizer.html` | AI News Summarizer interface accepting article URL or raw text with Short, Detailed, and Key Points formats, loading states, and clipboard copy. |
+| `/ask-ai/` | `ai_views.ask_ai_view` | `ai:ask_ai` | `templates/intelligence/ask_ai.html` | TrendBot interactive conversational AI assistant with preset inquiries, typing indicators, live chat bubbles, and auto-scroll. |
+| `/login/` | `accounts_views.login_view` | `accounts:login` | `templates/auth/login.html` | Secure terminal login with CSRF protection, password visibility toggle, error handling, and demo account credentials. |
+| `/register/` | `accounts_views.register_view` | `accounts:register` | `templates/auth/register.html` | New analyst registration page with validation, password confirmation, and automatic profile creation. |
+| `/logout/` | `accounts_views.logout_view` | `accounts:logout` | *Redirects to `/`* | Closes user session and redirects to homepage with feedback toast. |
+| `/forgot-password/` | `accounts_views.forgot_password_view` | `accounts:forgot_password` | `templates/auth/forgot_password.html` | Password recovery interface for requesting reset tokens. |
+| `/profile/` | `accounts_views.profile_view` | `accounts:profile` | `templates/intelligence/profile.html` | Analyst profile management, editable username/email/bio, domain preference checkboxes, and activity counters. |
+| `/saved/` | `news_views.saved_news_view` | `news:saved_news` | `templates/intelligence/saved_news.html` | Dedicated saved intelligence library displaying user bookmarks with one-click remove and clear actions. |
 
 ---
 
@@ -33,7 +33,7 @@ Located in `templates/components/`:
   ```django
   {% include 'components/news_card.html' with article=article %}
   ```
-- **Features**: Visual thumbnail banner with gradient & geometric pattern, category tag, impact score badge, headline, source wire dot, publication date, summary, sentiment pill, reading time, "Read Article" drawer trigger, and bookmark toggle.
+- **Features**: Visual thumbnail banner with gradient & geometric pattern, category tag, impact score badge, headline, source wire dot, publication date, summary, sentiment pill, reading time, "Analyze Signal" drawer trigger, and bookmark toggle.
 
 ### B. Featured Breakthrough Card
 - **File**: `templates/components/news_card_featured.html`
@@ -41,7 +41,7 @@ Located in `templates/components/`:
   ```django
   {% include 'components/news_card_featured.html' with article=featured_article %}
   ```
-- **Features**: Dual-column layout, animated rotating radar scan, dynamic Impact Score Gauge (`1-100`), Trend Velocity badge (`+540% / 1h`), executive synthesis bullet points, and drawer report launcher.
+- **Features**: Dual-column layout, animated rotating radar scan, dynamic Impact Score Gauge (`1-100`), Trend Velocity badge (`+340% / 1h`), executive synthesis bullet points, and drawer report launcher.
 
 ### C. Compact News Card
 - **File**: `templates/components/news_card_compact.html`
@@ -53,62 +53,63 @@ Located in `templates/components/`:
 
 ---
 
-## 3. Backend API Endpoints
+## 3. Backend REST & AJAX API Endpoints
 
 ### A. Articles Stream Query
 - **Endpoint**: `GET /api/articles/`
 - **Query Parameters**:
-  - `q` (string, optional): Search keyword query matching title, summary, content, source, or category.
-  - `category` (string, optional): Category slug (e.g. `technology`, `business`, `politics`, `sports`, `science`, `entertainment`).
-  - `topic` (string, optional): Trending topic slug.
-  - `sentiment` (string, optional): Sentiment filter (`BULLISH`, `BEARISH`, `HIGH IMPACT`, `DEVELOPING`, `NEUTRAL`).
+  - `q` (string, optional): Search keyword query matching title, summary, content, source, or author.
+  - `category` (string, optional): Category slug (`technology`, `business`, `politics`, `sports`, `science`, `entertainment`).
+  - `source` (string, optional): Source slug or ID.
   - `sort` (string, optional): `latest` (default), `impact`, `velocity`.
+  - `page` (integer, optional): Current page number (default: 1).
+  - `page_size` (integer, optional): Items per page (default: 12, max: 50).
 - **Response Format**:
   ```json
   {
     "status": "success",
-    "count": 8,
+    "count": 18,
+    "num_pages": 2,
+    "current_page": 1,
+    "has_next": true,
+    "has_previous": false,
     "articles": [
       {
         "id": 1,
-        "title": "Next-Gen Neuromorphic AI Processors Achieve 100x Energy Efficiency Milestone",
-        "slug": "neuromorphic-ai-processors-100x-energy-efficiency",
+        "title": "Autonomous Multi-Agent Networks Surpass Human Engineering Velocity in Hardware Simulation",
+        "slug": "autonomous-multi-agent-networks-surpass-human-velocity",
         "category_id": 1,
-        "category_name": "Technology",
+        "category_name": "Technology & Computing",
         "category_slug": "technology",
         "category_color": "#8b5cf6",
         "category_badge": "badge-purple",
         "source_name": "MIT Technology Review",
         "source_domain": "technologyreview.com",
-        "published_at": "2026-11-20T08:14:00Z",
+        "published_at": "2026-11-20T14:45:00Z",
         "formatted_date": "Nov 20, 2026",
-        "time_ago": "14m ago",
-        "summary": "Monolithic 3D neuromorphic silicon architecture...",
-        "content": "Full multi-paragraph report text...",
+        "time_ago": "18m ago",
+        "summary": "Hierarchical agent swarms autonomously verify complex verilog silicon circuits...",
+        "content": "A benchmark release from frontier compute teams...",
         "takeaways": [
-          "100x reduction in watt-per-operation envelope.",
-          "Zero static leakage power."
+          "Autonomous multi-agent swarms achieve 14x acceleration in silicon circuit timing verification.",
+          "Direct reduction of multi-month chip physical design cycles to under 72 hours."
         ],
         "read_time_minutes": 5,
         "impact_score": 98,
-        "velocity_score": "+540% / 1h",
+        "velocity_score": "+340% / 1h",
         "sentiment": "BULLISH",
-        "image_gradient": "linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)",
+        "image_gradient": "linear-gradient(135deg, #1e1b4b 0%, #311042 100%)",
         "hero_pattern": "neural-grid",
         "is_featured": true,
         "is_breaking": true,
-        "views_count": 8420,
-        "bookmarks_count": 612
+        "views_count": 1420
       }
     ]
   }
   ```
 
----
-
-### B. Single Article Intelligence Report
+### B. Single Article Detail
 - **Endpoint**: `GET /api/articles/<slug>/`
-- **Description**: Retrieves full intelligence dossier, increments view counter, and adds to user reading history if authenticated.
 - **Response Format**:
   ```json
   {
@@ -117,30 +118,73 @@ Located in `templates/components/`:
   }
   ```
 
----
-
-### C. Bookmark Toggle
-- **Endpoint**: `GET /api/bookmark/<slug>/` or `POST /api/bookmark/<slug>/`
-- **Description**: Toggles bookmark in user's `UserProfile.saved_articles` and returns current status.
+### C. Article Bookmark Toggle
+- **Endpoint**: `POST /api/bookmark/<slug>/`
+- **Authentication**: Authenticated user session (or fallback to demo session).
 - **Response Format**:
   ```json
   {
     "status": "success",
-    "slug": "neuromorphic-ai-processors-100x-energy-efficiency",
-    "bookmarked": true
+    "action": "saved",
+    "is_saved": true,
+    "slug": "autonomous-multi-agent-networks-surpass-human-velocity",
+    "total_saved": 3
   }
   ```
 
----
-
-### D. AI News Summarizer
-- **Endpoint**: `POST /api/summarize/`
-- **Request Body (JSON or Form-Data)**:
+### D. User Bookmarks List
+- **Endpoint**: `GET /api/user-bookmarks/`
+- **Response Format**:
   ```json
   {
-    "text": "Full dispatch text content...",
-    "url": "https://source.com/article (optional)",
-    "format": "short" | "detailed" | "keypoints"
+    "status": "success",
+    "count": 3,
+    "saved_slugs": ["slug-1", "slug-2", "slug-3"]
+  }
+  ```
+
+### E. Trending Topics Radar
+- **Endpoint**: `GET /api/trends/`
+- **Query Parameters**:
+  - `category` (string, optional): Filter by category slug.
+  - `limit` (integer, optional): Max records (default: 20).
+- **Response Format**:
+  ```json
+  {
+    "status": "success",
+    "count": 8,
+    "trends": [
+      {
+        "id": 1,
+        "title": "Autonomous AI Agents",
+        "slug": "autonomous-ai-agents",
+        "category_name": "Technology & Computing",
+        "category_slug": "technology",
+        "category_color": "#8b5cf6",
+        "category_badge": "badge-purple",
+        "volume_mentions": 48920,
+        "velocity_percentage": 342,
+        "sentiment": "bullish",
+        "trend_direction": "hot",
+        "movement_text": "+18 ranks today",
+        "article_count": 124,
+        "is_hot": true,
+        "calculated_score": 96.8,
+        "sparkline": [30, 45, 60, 75, 90, 98, 100],
+        "summary": "Enterprise adoption of multi-agent cognitive architectures..."
+      }
+    ]
+  }
+  ```
+
+### F. AI News Summarizer
+- **Endpoint**: `POST /api/summarize/`
+- **Request Body (JSON)**:
+  ```json
+  {
+    "text": "Full article text...",
+    "url": "https://example.com/article",
+    "format": "short"
   }
   ```
 - **Response Format**:
@@ -148,20 +192,18 @@ Located in `templates/components/`:
   {
     "status": "success",
     "format": "short",
-    "format_label": "Short Executive Briefing",
-    "summary": "Synthesized summary content...",
-    "bullets": ["Bullet 1", "Bullet 2"],
+    "format_label": "Short Executive Summary",
+    "saved_percentage": 68,
     "words_original": 240,
-    "words_summary": 42,
-    "saved_percentage": 82
+    "words_summary": 75,
+    "summary": "<strong>Executive Synthesis: ...</strong><br><br>• Key point 1...",
+    "estimated_read_time": "1 min read"
   }
   ```
 
----
-
-### E. TrendBot Conversational Chat
+### G. TrendBot Chatbot Query
 - **Endpoint**: `POST /api/chat/`
-- **Request Body (JSON or Form-Data)**:
+- **Request Body (JSON)**:
   ```json
   {
     "message": "What are today's top technology trends?"
@@ -171,28 +213,29 @@ Located in `templates/components/`:
   ```json
   {
     "status": "success",
-    "reply": "<p>Formatted HTML response with verified dispatches and trends...</p>",
-    "timestamp": "14:35:10 UTC"
+    "reply": "Here are today's highest-velocity technology intelligence trends:<br><br><strong>1. Autonomous AI Agents</strong>...",
+    "suggestions": [
+      "Deep-dive into Autonomous AI Agents",
+      "Summarize semiconductor fab progress",
+      "What are the top business headlines?"
+    ]
   }
   ```
 
----
-
-### F. Real-Time Signal Influx Simulator
+### H. Simulated Signal Influx
 - **Endpoint**: `GET /api/simulate-signal/`
-- **Description**: Synthesizes and saves a new incoming breaking intelligence signal to SQLite and returns it for live prepend animation.
 - **Response Format**:
   ```json
   {
     "status": "success",
-    "signal": { ... }
+    "signal": {
+      "title": "Frontier Photonic Interconnect Achieves 1.6 Petabit/s Coherent Bandwidth",
+      "category": "technology",
+      "source": "MIT Tech Review",
+      "impact": 99,
+      "velocity": "+420% / 15m",
+      "sentiment": "BULLISH"
+    },
+    "timestamp": "2026-11-20T15:24:00Z"
   }
   ```
-
----
-
-## 4. Test Credentials
-
-- **Demo Username**: `demo_analyst`
-- **Password**: `Trendora2026!`
-- **Role**: Staff Analyst

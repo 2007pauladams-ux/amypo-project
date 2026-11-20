@@ -1,102 +1,196 @@
 # TRENDORA — Real-Time News and Trend Intelligence
 
-**TRENDORA** is a professional, high-performance technology dashboard and intelligence platform built with **Django**, **HTML5**, **CSS3**, and **Vanilla JavaScript** (zero frontend frameworks).
+**TRENDORA** is a modular, high-performance technology dashboard and intelligence platform built with **Python 3.13**, **Django 6.1**, **HTML5**, **CSS3**, and **Vanilla JavaScript** (strictly zero React or external JavaScript frameworks).
 
-It synthesizes real-time technological breakthroughs, macro signals, and trending topics into an executive command interface featuring a dark navy and purple neon aesthetic, Bloomberg Terminal/Linear-grade typography, dynamic live charts, instant search, and deep-dive intelligence reports.
-
----
-
-## Key Features
-
-1. **Futuristic Dark Navy & Purple Visual Architecture**
-   - Color system: Deep space midnight `#05070f`, surface navy `#0e1424`, glowing neon purple `#8b5cf6`, and cyan accents `#06b6d4`.
-   - Subtle glowing borders, glassmorphism (`backdrop-filter: blur(16px)`), micro-interactions, and animated radar sweep effects.
-
-2. **TRENDORA Vector Branding & Top Telemetry Bar**
-   - High-tech vector logo with dynamic light-sweep animation.
-   - Continuous live breaking flash dispatches ticker (pauses on hover).
-   - Real-time UTC & Local millisecond clocks updated dynamically.
-   - Grid status telemetry: 18ms latency, 48K+ global signals monitored.
-
-3. **Prominent News Search Bar & Instant Filtering**
-   - Large glowing search bar with keyboard shortcut (`/` or `Ctrl + K`).
-   - Pure vanilla JavaScript client-side instant search across titles, summaries, sources, and categories with search query term highlighting.
-   - Category filter pills with live counters.
-   - Quick "Clear" button (`X`) when query is present.
-
-4. **Breakthrough Story Spotlight (Hero Section)**
-   - Featured breakthrough report with radar scan visual effect.
-   - Dynamic **Impact Score Gauge** (e.g. `98/100`) and **Velocity Meter** (`+540% / 1h`).
-   - Executive Synthesis Takeaways bullet points.
-   - Slide-over intelligence reader trigger.
-
-5. **Trending Topics & Velocity Radar**
-   - High-velocity topic clusters with rank badges (`#01`, `#02`, ...).
-   - Real-time SVG sparklines displaying momentum curves.
-   - Interactive trend filtering: Clicking any trend card filters headlines immediately to that specific topic.
-
-6. **Latest Headlines Stream**
-   - Multiple view modes: **Rich Grid View** and **Dense Terminal List View** (persisted to `localStorage`).
-   - Multi-attribute sorting: **Latest First**, **Highest Impact Score**, or **Trending Velocity**.
-   - Category color dots, sentiment pills (`BULLISH`, `BEARISH`, `HIGH IMPACT`, `DEVELOPING`), reading time, and publication timestamps.
-
-7. **Interactive Deep-Dive Reader Drawer**
-   - Slide-over reader drawer with reading progress bar.
-   - Complete multi-paragraph intelligence breakdown, key takeaway bullets, source citations, impact scores, and reading time.
-   - Share button: Copies direct hash link (`#slug`) to clipboard with animated toast notification.
-
-8. **Saved Intel / Bookmarks Library**
-   - Bookmark any dispatch with one click; saved securely in `localStorage`.
-   - Live bookmark counter in the navigation bar.
-   - Dedicated slide-over drawer to review, inspect, or clear saved reports.
-
-9. **Live Signal Influx Simulator**
-   - "SIMULATE SIGNAL" button dynamically decodes incoming intelligence signals from the backend API (`/api/simulate-signal/`) and prepends them with a smooth glowing arrival animation.
-
-10. **100% Responsive Architecture**
-    - Optimized for widescreen desktops (1440px+), laptops, tablets, and mobile smartphones.
-    - Touch-friendly drawer interactions and mobile drawer navigation.
+It synthesizes real-time news dispatches, macroeconomic trends, and frontier technology breakthroughs into a unified command dashboard featuring a dark navy and purple neon aesthetic, Bloomberg Terminal-grade typography, algorithmic trend detection, an AI news summarizer, and TrendBot conversational intelligence.
 
 ---
 
-## Technology Stack
+## Architecture Overview
 
-- **Backend**: Python 3.13 / Django 6.1
-- **Templates**: Django Templates (HTML5, Semantic ARIA)
-- **Styling**: Modern CSS3 (Custom properties, CSS Grid, Flexbox, Glassmorphism, Keyframe animations)
-- **Client Scripting**: Pure Vanilla JavaScript (ES6+, zero external libraries or frameworks)
-- **Database**: SQLite3 (pre-seeded with rich, realistic frontier technology articles and trends)
+The system is organized into a modular Django architecture with four decoupled applications:
+
+```
+TRENDORA/
+├── accounts/                  # Authentication, analyst sessions & preference tracking
+│   ├── models.py              # UserProfile with preferred categories & bio
+│   ├── views.py               # Login, Register, Logout, Forgot Password, Profile views
+│   └── urls.py                # Authentication endpoints
+│
+├── news/                      # News aggregation, normalization & storage
+│   ├── models.py              # NewsCategory, NewsSource, NewsArticle, SavedArticle, SearchHistory
+│   ├── services/
+│   │   └── newsapi_service.py # NewsAPI ingestion, normalization & duplicate prevention
+│   ├── management/commands/
+│   │   ├── collect_news.py    # Autonomous collection pipeline
+│   │   └── seed_trendora.py   # Complete multi-domain initial database seeder
+│   ├── views.py               # Index, Dashboard, Advanced Search, Saved News & REST APIs
+│   └── urls.py                # News routes & REST endpoints
+│
+├── trends/                    # Algorithmic trend detection & velocity scoring
+│   ├── models.py              # TrendingTopic with calculated scores & sparklines
+│   ├── services/
+│   │   └── trend_detector.py  # Frequency + recency decay trend detection engine
+│   ├── management/commands/
+│   │   └── detect_trends.py   # Algorithmic trend detection runner
+│   ├── views.py               # Trending Topics view & /api/trends/ endpoint
+│   └── urls.py                # Trends routing
+│
+├── ai/                        # AI intelligence suite
+│   ├── services/
+│   │   ├── summarizer_service.py # Multi-format summarization (Short, Detailed, Keypoints)
+│   │   └── trendbot_service.py   # TrendBot contextual intelligence chatbot
+│   ├── views.py               # AI Summarizer & TrendBot views + REST endpoints
+│   └── urls.py                # AI routing
+│
+├── static/
+│   ├── css/trendora.css       # Unified design system stylesheet
+│   └── js/trendora.js         # Pure vanilla JavaScript client engine
+│
+├── templates/
+│   ├── base.html              # Base shell with live status bar & ticker
+│   ├── auth/                  # Login, Register, Forgot Password
+│   ├── components/            # Reusable news cards (Featured, Regular, Compact)
+│   └── intelligence/          # Index, Dashboard, Search, Trending, Summarizer, Ask AI, Profile, Saved
+│
+├── trendora_project/          # Root project settings & master URL routing
+└── manage.py
+```
 
 ---
 
-## Running the Application
+## Quick Start & Installation
 
-To launch the TRENDORA development server:
+### 1. Prerequisites
+- Python 3.10+ (tested on Python 3.13)
+- pip
 
+### 2. Install Dependencies
+```powershell
+pip install -r requirements.txt
+```
+
+### 3. Environment Configuration
+Create a `.env` file in the root directory (copied from `.env.example`):
+```ini
+SECRET_KEY=trendora-production-insecure-key-2026-sec-grade-quantum
+DEBUG=True
+ALLOWED_HOSTS=*
+NEWSAPI_KEY=your_newsapi_org_key_here
+DEFAULT_COUNTRY=us
+COLLECTION_INTERVAL_HOURS=2
+DEFAULT_PAGE_SIZE=12
+```
+
+> **Note**: Even if `NEWSAPI_KEY` is not provided or quota-limited, TRENDORA includes a built-in synthetic signal generator ensuring full offline development, testing, and continuous operation without external API dependencies.
+
+### 4. Database Setup & Migrations
+```powershell
+python manage.py makemigrations accounts news trends ai
+python manage.py migrate
+```
+
+### 5. Seed Initial Intelligence Data
+Populate the database with foundational categories, sources, trending topics, baseline news articles, and a demo analyst user account:
+```powershell
+python manage.py seed_trendora
+```
+
+### 6. Run the Development Server
 ```powershell
 python manage.py runserver
 ```
+Navigate to: **`http://127.0.0.1:8000/`**
 
-Then open your browser at:
-```
-http://127.0.0.1:8000/
-```
+---
 
-### Running the Test Suite
+## Default Analyst Credentials
+
+| Role | Username | Password | Email |
+| :--- | :--- | :--- | :--- |
+| **Lead Analyst (Superuser)** | `demo_analyst` | `Trendora2026!` | `analyst@trendora.intel` |
+
+---
+
+## Management Commands
+
+### 1. Automated News Ingestion (`collect_news`)
+Fetches news from NewsAPI, normalizes payloads, extracts sources/categories, generates key takeaways, and updates or creates database records preventing duplicates based on canonical URL.
 
 ```powershell
-python manage.py test
+# Ingest top headlines across all categories
+python manage.py collect_news --limit 20
+
+# Ingest specifically for a technology or business category
+python manage.py collect_news --category technology --limit 15
+
+# Deep search everything query
+python manage.py collect_news --query "quantum computing" --everything --limit 10
 ```
 
-### Seeding Data (Optional)
+### 2. Algorithmic Trend Detection (`detect_trends`)
+Analyzes collected article titles and summaries, extracts n-grams and entities, applies exponential publication recency decay and impact score weighting, and synchronizes `TrendingTopic` database records with sparklines.
 
+```powershell
+# Analyze the last 7 days of articles
+python manage.py detect_trends --days 7 --min-count 1
+```
+
+### 3. Database Seeder (`seed_trendora`)
 ```powershell
 python manage.py seed_trendora
 ```
 
 ---
 
-## Keyboard Shortcuts
+## Algorithmic Trend Detection Model
 
-- `/` or `Ctrl + K`: Focus the prominent news search bar
-- `Escape`: Close any open drawer (Article Reader or Saved Bookmarks)
+TRENDORA evaluates emerging topics through a dual-scoring model distinguishing **calculated algorithmic trends** from **broadcast mention volume**:
+
+$$\text{Calculated Score} = \left(\sum_{a \in \text{Articles}} \frac{\text{Impact Score}_a}{100 \times (1 + \text{hours ago}_a \times 0.12)}\right) \times (1 + \ln(1 + |\text{Articles}|)) \times 10$$
+
+- **Impact Score**: 1-100 rating based on source tier, content density, and technical terminology.
+- **Recency Decay**: Harmonic time decay preventing stale dispatches from dominating the radar.
+- **Frequency Multiplier**: Logarithmic dampener preventing runaway amplification.
+- **Sparklines**: Dynamically generated 7-point momentum curves.
+
+---
+
+## Automated Test Suite
+
+A comprehensive test suite with 26 automated unit and integration tests covers authentication, models, services, duplicate prevention, views, and JSON REST APIs.
+
+Run tests:
+```powershell
+python manage.py test
+```
+
+Test coverage includes:
+- `accounts.tests`: User registration, password validation, authentication, profile updates, and signals.
+- `news.tests`: Unique URL constraints, NewsAPI normalization, deduplication, search filtering, and REST endpoints.
+- `trends.tests`: Trend detection engine, recency decay calculations, views, and /api/trends/ endpoint.
+- `ai.tests`: Summarization service (short, detailed, keypoints), TrendBot contextual responses, and REST endpoints.
+
+---
+
+## REST & AJAX API Catalog
+
+| Method | Endpoint | Description | Sample Query / Body |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/articles/` | Paginated article retrieval | `?q=quantum&category=technology&sort=impact&page=1` |
+| `GET` | `/api/articles/<slug>/` | Full article payload for reader modal | `/api/articles/superconducting-qubit-array/` |
+| `POST` | `/api/bookmark/<slug>/` | Toggle article bookmark for user | `/api/bookmark/autonomous-ai-agents/` |
+| `GET` | `/api/user-bookmarks/` | Slugs saved by current analyst | Synchronizes nav bookmark badge |
+| `GET` | `/api/trends/` | Ranked trending topics | `?category=all&limit=20` |
+| `POST` | `/api/summarize/` | AI article text/URL summarization | `{"text": "...", "format": "short"}` |
+| `POST` | `/api/chat/` | Interactive TrendBot query | `{"message": "What are today's top tech trends?"}` |
+| `GET` | `/api/simulate-signal/` | Influx simulation dispatch | Live telemetry push trigger |
+
+---
+
+## Frontend Design & Navigation Standards
+
+- **Theme**: Dark navy (`#05070f`, `#0e1424`), purple neon (`#8b5cf6`), and cyan accents (`#06b6d4`).
+- **Typography**: Inter (UI prose) and JetBrains Mono (metrics, telemetry, timestamps).
+- **Frontend Stack**: Strictly vanilla JavaScript (no React, Vue, or client build tools).
+- **Accessibility**: Full keyboard shortcuts (`/` for search, `Esc` for reader drawer), ARIA attributes, and high-contrast color tags.
