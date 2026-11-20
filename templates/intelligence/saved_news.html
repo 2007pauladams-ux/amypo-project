@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved Intelligence Library – TRENDORA{% endblock %}
+
+{% block content %}
+<div class="trend-container" style="padding-top: 2rem;">
+
+  <div class="search-page-header">
+    <div class="section-label-pill" style="margin-bottom: 0.6rem;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+      </svg>
+      SAVED DISPATCH ARCHIVE
+    </div>
+    <h1 class="search-page-title">Saved Intelligence & Bookmarks</h1>
+    <p class="search-page-subtitle">
+      Personalized offline briefing repository. All bookmarked intelligence reports are persisted for instant access and executive review.
+    </p>
+  </div>
+
+  <!-- Filter & Actions Bar -->
+  <div class="adv-filters-control-bar" style="margin-bottom: 2rem;">
+    <div class="adv-filters-left">
+      <span style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-indicator-dot"></span>
+        <span>Stored Bookmarks: <strong id="savedPageTotalCount" style="color: #fff; font-family: var(--font-mono);">{{ saved_articles.count }}</strong> reports</span>
+      </span>
+    </div>
+
+    <div class="adv-filters-right">
+      <button id="btnClearAllSavedPage" class="btn-danger-intel" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;">
+        Clear All Saved Dispatches
+      </button>
+    </div>
+  </div>
+
+  <!-- Saved Articles Stream Grid -->
+  <div class="articles-stream-grid" id="savedNewsGrid" style="margin-bottom: 4rem;">
+    {% for article in saved_articles %}
+      {% include 'components/news_card.html' with article=article %}
+    {% empty %}
+      <div class="empty-results-state" id="savedNewsEmptyState">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <h3 class="empty-title">No Saved Intelligence Reports</h3>
+        <p class="empty-sub">Click the bookmark icon on any dispatch across the dashboard or search stream to store it here.</p>
+        <a href="{% url 'intelligence:advanced_search' %}" class="btn-primary-intel" style="margin-top: 1rem; display: inline-flex;">
+          Explore Live Intelligence Feeds
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,357 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{% block title %}TRENDORA – Real-Time News and Trend Intelligence{% endblock %}</title>
+  <meta name="description" content="Autonomous real-time news intelligence and trend synthesis across frontier technology, artificial intelligence, quantum computing, and global markets.">
+  
+  <!-- Favicon SVG -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a855f7' stroke-width='2.2'><polygon points='12 2 2 7 12 12 22 7 12 2'></polygon><polyline points='2 17 12 22 22 17'></polyline><polyline points='2 12 12 17 22 12'></polyline></svg>">
+
+  <!-- Typography Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/trendora.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  <!-- Top System Status Bar & Breaking Ticker -->
+  <aside class="top-status-bar" aria-label="System Telemetry">
+    <div class="trend-container">
+      <div class="status-bar-inner">
+        <!-- Live Status Pill -->
+        <div class="system-status">
+          <span class="status-indicator-dot"></span>
+          <span>INTEL GRID: ONLINE (18ms)</span>
+        </div>
+
+        <!-- Live Breaking News Ticker -->
+        <div class="breaking-ticker-wrapper">
+          <div class="ticker-label">
+            <span class="ticker-label-dot"></span>
+            <span>FLASH DISPATCHES</span>
+          </div>
+          <div class="ticker-viewport">
+            <div class="ticker-track" id="breakingTickerTrack">
+              {% for item in breaking_news %}
+                <a href="/#{{ item.slug }}" class="ticker-item" data-open-article="{{ item.slug }}">
+                  <span class="ticker-time">{{ item.get_time_ago|upper }}:</span>
+                  <span>{{ item.title }}</span>
+                </a>
+              {% empty %}
+                <span class="ticker-item">Autonomous signal monitoring active across 48,000 global sources...</span>
+              {% endfor %}
+              <!-- Duplicate loop for smooth endless ticker loop -->
+              {% for item in breaking_news %}
+                <a href="/#{{ item.slug }}" class="ticker-item" data-open-article="{{ item.slug }}">
+                  <span class="ticker-time">{{ item.get_time_ago|upper }}:</span>
+                  <span>{{ item.title }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Clocks & Simulation Action -->
+        <div class="status-right-tools">
+          <div class="live-time-display">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span id="liveClockUtc">00:00:00 UTC</span>
+          </div>
+          <button id="simulateSignalBtn" class="sim-button" title="Inject simulated live breaking signal">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span>SIMULATE SIGNAL</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sticky Modern Navigation Header -->
+  <header class="site-header" id="siteHeader">
+    <div class="trend-container">
+      <nav class="navbar-container" aria-label="Main Navigation">
+        <!-- Brand Logo -->
+        <a href="/" class="brand-link" aria-label="TRENDORA Homepage">
+          <div class="logo-symbol">
+            <svg class="logo-svg" viewBox="0 0 24 24">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <div class="brand-meta">
+            <span class="brand-name">TRENDORA</span>
+            <span class="brand-tagline">TREND INTELLIGENCE</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Menu -->
+        <ul class="nav-menu" id="navMenu">
+          <li><a href="/" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a></li>
+          <li><a href="{% url 'intelligence:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+          <li><a href="{% url 'intelligence:trending' %}" class="nav-link {% if request.resolver_match.url_name == 'trending' %}active{% endif %}">Trending Topics</a></li>
+          <li><a href="{% url 'intelligence:advanced_search' %}" class="nav-link {% if request.resolver_match.url_name == 'advanced_search' %}active{% endif %}">Search</a></li>
+          <li><a href="{% url 'intelligence:ai_summarizer' %}" class="nav-link {% if request.resolver_match.url_name == 'ai_summarizer' %}active{% endif %}">AI Summarizer</a></li>
+          <li><a href="{% url 'intelligence:ask_ai' %}" class="nav-link {% if request.resolver_match.url_name == 'ask_ai' %}active{% endif %}">Ask TrendBot</a></li>
+        </ul>
+
+        <!-- Navigation Actions -->
+        <div class="nav-actions">
+          <a href="{% url 'intelligence:advanced_search' %}" class="nav-search-btn" aria-label="Search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Search</span>
+            <span class="kbd-shortcut">/</span>
+          </a>
+
+          <a href="{% url 'intelligence:saved_news' %}" class="bookmark-nav-trigger" id="bookmarkNavTrigger" aria-label="View Saved Intel">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Saved Intel</span>
+            <span class="bookmark-badge" id="navBookmarkBadge">0</span>
+          </a>
+
+          <!-- User Authentication Section -->
+          {% if request.user.is_authenticated %}
+            <div class="nav-user-pill">
+              <a href="{% url 'intelligence:profile' %}" class="user-profile-badge" title="User Profile">
+                <span class="user-avatar-mini">{{ request.user.username|make_list|first|upper }}</span>
+                <span class="user-name-text">{{ request.user.username }}</span>
+              </a>
+              <a href="{% url 'intelligence:logout' %}" class="nav-logout-btn" title="Sign Out">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </a>
+            </div>
+          {% else %}
+            <div class="nav-auth-buttons">
+              <a href="{% url 'intelligence:login' %}" class="btn-nav-login">Sign In</a>
+              <a href="{% url 'intelligence:register' %}" class="btn-nav-register">Register</a>
+            </div>
+          {% endif %}
+
+          <!-- Mobile Hamburger Menu Button -->
+          <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Block -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Interactive Slide-over Article Reader Drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <aside class="article-reader-drawer" id="readerDrawer" aria-label="Full Article Intelligence Report" aria-hidden="true">
+    <div class="drawer-reading-progress" id="drawerReadingProgress"></div>
+    <div class="drawer-header">
+      <div class="drawer-header-meta">
+        <span class="cat-pill badge-purple" id="readerCategory">Technology</span>
+        <span class="sentiment-pill sentiment-bullish" id="readerSentiment">BULLISH</span>
+      </div>
+      <button class="drawer-close-btn" id="readerCloseBtn" aria-label="Close reader">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="drawer-body-scroll" id="drawerScrollContainer">
+      <h2 class="drawer-title" id="readerTitle">Article Headline</h2>
+
+      <div class="drawer-info-grid">
+        <div class="drawer-info-item">
+          <span class="drawer-info-label">Source & Wire</span>
+          <span class="drawer-info-val" id="readerSource">MIT Tech Review</span>
+        </div>
+        <div class="drawer-info-item">
+          <span class="drawer-info-label">Impact Score</span>
+          <span class="drawer-info-val" id="readerImpact">98/100</span>
+        </div>
+        <div class="drawer-info-item">
+          <span class="drawer-info-label">Trend Velocity</span>
+          <span class="drawer-info-val" id="readerVelocity">+540% / 1h</span>
+        </div>
+      </div>
+
+      <!-- Executive Key Takeaways -->
+      <div class="key-takeaways-box">
+        <div class="takeaways-heading">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          Executive Synthesis Takeaways
+        </div>
+        <ul class="takeaways-list" id="readerTakeawaysList">
+          <!-- Populated by JavaScript -->
+        </ul>
+      </div>
+
+      <!-- Full Article Content -->
+      <div class="drawer-article-content" id="readerBodyContent">
+        <!-- Populated by JavaScript -->
+      </div>
+
+      <!-- Drawer Bottom Actions -->
+      <div style="margin-top: 2.5rem; display: flex; gap: 1rem; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+        <button id="readerBookmarkBtn" class="btn-primary-intel" style="padding: 0.65rem 1.2rem; font-size: 0.85rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Bookmark Intel</span>
+        </button>
+
+        <button id="readerShareBtn" class="icon-action-btn" style="width: auto; padding: 0 1rem; gap: 0.5rem;" title="Copy Dispatch Link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span>Share Dispatch</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Saved Intel / Bookmarks Drawer -->
+  <aside class="bookmarks-drawer" id="bookmarksDrawer" aria-label="Saved Bookmarks" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-header-meta">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Saved Intelligence</h3>
+      </div>
+      <button class="drawer-close-btn" id="bookmarksCloseBtn" aria-label="Close bookmarks">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="bookmarks-list" id="bookmarksList">
+      <!-- Populated by JavaScript -->
+    </div>
+
+    <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+      <button id="clearBookmarksBtn" style="background: transparent; border: none; color: var(--rose-accent); font-size: 0.8rem; cursor: pointer;">
+        Clear All Saved
+      </button>
+      <a href="{% url 'intelligence:saved_news' %}" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple-light); text-decoration: none;">View Full Saved Page →</a>
+    </div>
+  </aside>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Premium Futuristic Footer -->
+  <footer class="site-footer">
+    <div class="trend-container">
+      <div class="footer-top-grid">
+        <div class="footer-brand-col">
+          <div class="brand-link">
+            <div class="logo-symbol">
+              <svg class="logo-svg" viewBox="0 0 24 24">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+            </div>
+            <div class="brand-meta">
+              <span class="brand-name">TRENDORA</span>
+              <span class="brand-tagline">TREND INTELLIGENCE</span>
+            </div>
+          </div>
+          <p class="footer-desc">
+            Autonomous synthesis of global technological breakthroughs, market shifts, and macro signals before they hit mainstream headlines. Powered by low-latency signal aggregation.
+          </p>
+          <div style="display: flex; gap: 0.6rem; margin-top: 0.5rem;">
+            <span class="status-indicator-dot"></span>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--emerald-accent);">GRID LATENCY: 18ms • SATELLITE LINK STABLE</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Platform Intelligence</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'intelligence:dashboard' %}" class="footer-link">Analyst Dashboard</a></li>
+            <li><a href="{% url 'intelligence:trending' %}" class="footer-link">Trending Topics Radar</a></li>
+            <li><a href="{% url 'intelligence:advanced_search' %}" class="footer-link">Advanced Search Engine</a></li>
+            <li><a href="{% url 'intelligence:ai_summarizer' %}" class="footer-link">AI News Summarizer</a></li>
+            <li><a href="{% url 'intelligence:ask_ai' %}" class="footer-link">Ask TrendBot AI</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Domains Monitored</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'intelligence:advanced_search' %}?category=technology" class="footer-link">Technology & Computing</a></li>
+            <li><a href="{% url 'intelligence:advanced_search' %}?category=business" class="footer-link">Business & Financial Flows</a></li>
+            <li><a href="{% url 'intelligence:advanced_search' %}?category=politics" class="footer-link">Politics & Global Accords</a></li>
+            <li><a href="{% url 'intelligence:advanced_search' %}?category=sports" class="footer-link">Sports & High-Performance</a></li>
+            <li><a href="{% url 'intelligence:advanced_search' %}?category=science" class="footer-link">Science & Nuclear Fusion</a></li>
+            <li><a href="{% url 'intelligence:advanced_search' %}?category=entertainment" class="footer-link">Entertainment & Digital Media</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Executive Intel Briefing</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.6rem;">
+            Receive encrypted daily trend velocity summaries direct to your briefing terminal.
+          </p>
+          <form class="newsletter-form" onsubmit="event.preventDefault(); showToast('Subscribed to TRENDORA Executive Intel Briefing', 'success'); this.reset();">
+            <input type="email" class="newsletter-input" placeholder="terminal@agency.gov" required>
+            <button type="submit" class="search-submit-btn" style="padding: 0.6rem 1rem;">
+              <span>Join</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <div>
+          © 2026 TRENDORA Intelligence Engine. All rights reserved. Zero external tracking.
+        </div>
+        <div style="display: flex; gap: 1.5rem; font-family: var(--font-mono);">
+          <span>SEC-GRADE 256-BIT</span>
+          <span>NIST PQC COMPLIANT</span>
+          <span>BUILD v3.4.12</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Vanilla JavaScript Core Engine -->
+  <script src="{% static 'js/trendora.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

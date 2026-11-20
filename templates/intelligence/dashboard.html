@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analyst Dashboard – TRENDORA{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  
+  <!-- ========================================================================
+       DASHBOARD SIDEBAR
+       ======================================================================== -->
+  <aside class="dashboard-sidebar" id="dashboardSidebar">
+    <!-- User Profile Quick Badge -->
+    <div class="sidebar-user-card">
+      <div class="sidebar-avatar">{{ request.user.username|default:"Analyst"|make_list|first|upper }}</div>
+      <div class="sidebar-user-info">
+        <h4 class="sidebar-username">{{ request.user.first_name|default:request.user.username|default:"Lead Analyst" }}</h4>
+        <span class="sidebar-user-role">{% if request.user.is_authenticated %}Verified Analyst{% else %}Guest Access{% endif %}</span>
+      </div>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-group-title">COMMAND NAVIGATION</div>
+      <ul class="sidebar-nav-list">
+        <li>
+          <a href="{% url 'intelligence:dashboard' %}" class="sidebar-nav-item active">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9"></rect>
+              <rect x="14" y="3" width="7" height="5"></rect>
+              <rect x="14" y="12" width="7" height="9"></rect>
+              <rect x="3" y="16" width="7" height="5"></rect>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'intelligence:advanced_search' %}" class="sidebar-nav-item">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+              <path d="M18 14h-8"></path>
+              <path d="M15 18h-5"></path>
+              <path d="M10 6h8v4h-8V6Z"></path>
+            </svg>
+            <span>Latest News</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'intelligence:trending' %}" class="sidebar-nav-item">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+            <span>Trending Topics</span>
+            <span class="sidebar-badge-hot">HOT</span>
+          </a>
+        </li>
+        <li>
+          <a href="#categoriesSection" class="sidebar-nav-item">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span>Categories</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-nav-group-title">AI INTELLIGENCE SUITE</div>
+      <ul class="sidebar-nav-list">
+        <li>
+          <a href="{% url 'intelligence:ai_summarizer' %}" class="sidebar-nav-item">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>AI Summarizer</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'intelligence:ask_ai' %}" class="sidebar-nav-item">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="10" r="1"></circle>
+              <circle cx="8" cy="10" r="1"></circle>
+              <circle cx="16" cy="10" r="1"></circle>
+            </svg>
+            <span>Ask AI (TrendBot)</span>
+            <span class="sidebar-badge-ai">AI</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'intelligence:saved_news' %}" class="sidebar-nav-item">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Saved Intel</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'intelligence:profile' %}" class="sidebar-nav-item">
+            <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>User Profile</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Sidebar Mini Telemetry Widget -->
+    <div class="sidebar-telemetry-box">
+      <div class="sidebar-tel-head">
+        <span class="status-indicator-dot"></span>
+        <span>STREAM SYNC</span>
+      </div>
+      <div class="sidebar-tel-stat">18ms latency</div>
+      <div class="sidebar-tel-sub">99.98% cluster integrity</div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       MAIN DASHBOARD WORKSPACE
+       ======================================================================== -->
+  <main class="dashboard-main">
+    
+    <!-- Top Welcome & Search Header -->
+    <div class="dashboard-header-bar">
+      <div>
+        <h1 class="dashboard-title">Intelligence Command Dashboard</h1>
+        <p class="dashboard-subtitle">Real-time macro telemetry, cross-domain trend monitoring, and autonomous news synthesis.</p>
+      </div>
+
+      <div class="dashboard-header-actions">
+        <a href="{% url 'intelligence:advanced_search' %}" class="btn-dash-action">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Search Feeds</span>
+        </a>
+        <button onclick="document.getElementById('simulateSignalBtn').click()" class="btn-dash-action primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>Simulate Feed</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Telemetry Statistics Grid -->
+    <div class="dashboard-kpi-grid">
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-header">
+          <span class="dash-kpi-label">TOTAL MONITORED DISPATCHES</span>
+          <span class="dash-kpi-icon-pill" style="color: var(--purple-light);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+            </svg>
+          </span>
+        </div>
+        <div class="dash-kpi-value">{{ total_articles_count }}</div>
+        <div class="dash-kpi-sub positive">▲ +14% vs yesterday</div>
+      </div>
+
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-header">
+          <span class="dash-kpi-label">ACTIVE TREND CLUSTERS</span>
+          <span class="dash-kpi-icon-pill" style="color: var(--cyan-accent);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+          </span>
+        </div>
+        <div class="dash-kpi-value">{{ trending_topics.count }}</div>
+        <div class="dash-kpi-sub positive">● 6 breakout signals</div>
+      </div>
+
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-header">
+          <span class="dash-kpi-label">HIGH-IMPACT SCORE RATIO</span>
+          <span class="dash-kpi-icon-pill" style="color: var(--emerald-accent);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </span>
+        </div>
+        <div class="dash-kpi-value">{{ high_impact_percentage }}%</div>
+        <div class="dash-kpi-sub">Verified tier-1 wires</div>
+      </div>
+
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-header">
+          <span class="dash-kpi-label">GLOBAL AI SYNTHESIS</span>
+          <span class="dash-kpi-icon-pill" style="color: var(--amber-accent);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </span>
+        </div>
+        <div class="dash-kpi-value">Active</div>
+        <div class="dash-kpi-sub positive">TrendBot & Summarizer Ready</div>
+      </div>
+    </div>
+
+    <!-- Trending Keywords Strip -->
+    <div class="dash-keywords-strip">
+      <div class="keywords-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span>HOT KEYWORDS:</span>
+      </div>
+      <div class="keywords-pill-track">
+        {% for topic in trending_topics %}
+          <a href="{% url 'intelligence:advanced_search' %}?q={{ topic.title }}" class="keyword-pill">
+            <span class="kw-hash">#</span>
+            <span>{{ topic.title }}</span>
+            <span class="kw-velocity">+{{ topic.velocity_percentage }}%</span>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Primary Dual Split Grid: Recent Articles & Intelligence Side Column -->
+    <div class="dashboard-split-grid">
+      <!-- Left Column: Recently Published Intelligence -->
+      <section class="dash-split-main">
+        <div class="dash-section-header">
+          <div>
+            <h2 class="dash-section-title">Recently Published Dispatches</h2>
+            <p class="dash-section-sub">Latest verified articles across all monitored global feeds</p>
+          </div>
+          <a href="{% url 'intelligence:advanced_search' %}" class="dash-view-all-link">Browse Full Feed →</a>
+        </div>
+
+        <div class="dash-articles-list">
+          {% for article in recent_articles %}
+            {% include 'components/news_card.html' with article=article %}
+          {% empty %}
+            <p style="color: var(--text-muted);">No recent articles found.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Right Column: High Momentum Radar & AI Quick Tools -->
+      <aside class="dash-split-side">
+        <!-- High Momentum Radar Box -->
+        <div class="dash-side-box">
+          <div class="dash-side-box-head">
+            <h3 class="dash-side-title">Trending Velocity Radar</h3>
+            <a href="{% url 'intelligence:trending' %}" class="dash-view-all-link" style="font-size: 0.75rem;">Full Radar</a>
+          </div>
+
+          <div class="dash-trending-mini-list">
+            {% for topic in trending_topics|slice:":5" %}
+              <div class="dash-trend-mini-card" onclick="window.location='{% url 'intelligence:advanced_search' %}?q={{ topic.title }}'">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                  <span class="trend-rank">#0{{ forloop.counter }}</span>
+                  <span class="velocity-badge" style="font-size: 0.75rem;">▲ +{{ topic.velocity_percentage }}%</span>
+                </div>
+                <h4 class="mini-trend-title">{{ topic.title }}</h4>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">
+                  <span>{{ topic.category.name }}</span>
+                  <span>{{ topic.movement_text }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- AI Assistant Quick Launch Card -->
+        <div class="dash-side-box" style="border-color: rgba(139, 92, 246, 0.4); background: linear-gradient(135deg, rgba(30, 27, 75, 0.7) 0%, rgba(14, 20, 36, 0.85) 100%);">
+          <div class="dash-side-box-head">
+            <h3 class="dash-side-title" style="color: var(--purple-light);">TrendBot AI Command</h3>
+            <span class="sidebar-badge-ai">ONLINE</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+            Ask TrendBot to synthesize today's breaking technology shifts, summarize news, or predict emerging macro movements.
+          </p>
+          <a href="{% url 'intelligence:ask_ai' %}" class="btn-primary-intel" style="width: 100%; justify-content: center; font-size: 0.85rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Launch TrendBot Chat</span>
+          </a>
+        </div>
+
+        <!-- Saved Intel Quick Box -->
+        <div class="dash-side-box">
+          <div class="dash-side-box-head">
+            <h3 class="dash-side-title">Saved Intel Dispatches</h3>
+            <a href="{% url 'intelligence:saved_news' %}" class="dash-view-all-link" style="font-size: 0.75rem;">Manage</a>
+          </div>
+          <div id="dashSavedMiniList" class="dash-saved-mini-container">
+            <!-- Populated via vanilla JS from localStorage or backend -->
+            <p style="font-size: 0.8rem; color: var(--text-muted); padding: 0.5rem 0;">Checking locally bookmarked intelligence dispatches...</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ======================================================================
+         CATEGORY-WISE NEWS SECTIONS
+         ====================================================================== -->
+    <section class="category-news-matrix-section" id="categoriesSection">
+      <div class="dash-section-header">
+        <div>
+          <h2 class="dash-section-title">Category-Wise Intelligence Matrix</h2>
+          <p class="dash-section-sub">Domain-specific news feeds partitioned across 6 intelligence vectors</p>
+        </div>
+      </div>
+
+      <div class="category-tabs-wrapper">
+        <div class="cat-matrix-tabs" id="catMatrixTabs">
+          <button class="cat-matrix-tab active" data-target-tab="all-cats">All Domains</button>
+          {% for cat in categories %}
+            <button class="cat-matrix-tab" data-target-tab="cat-{{ cat.slug }}">{{ cat.name }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="category-matrix-content">
+        {% for cat in categories %}
+          <div class="category-panel-block" id="panel-cat-{{ cat.slug }}">
+            <div class="category-panel-header" style="border-left: 4px solid {{ cat.color_code }};">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <h3 class="cat-panel-title">{{ cat.name }}</h3>
+                <span class="cat-pill {{ cat.badge_class }}">{{ cat.articles.count }} dispatches</span>
+              </div>
+              <a href="{% url 'intelligence:advanced_search' %}?category={{ cat.slug }}" class="dash-view-all-link">Search {{ cat.name }} →</a>
+            </div>
+
+            <div class="articles-stream-grid" style="margin-top: 1.2rem;">
+              {% for article in cat.articles.all|slice:":3" %}
+                {% include 'components/news_card.html' with article=article %}
+              {% empty %}
+                <p style="color: var(--text-muted); padding: 1rem;">No dispatches currently listed for this domain.</p>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </main>
+</div>
+{% endblock %}

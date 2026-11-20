@@ -1,0 +1,26 @@
+{% comment %}
+Reusable Compact News Article Card Component for TRENDORA
+Usage: {% include 'components/news_card_compact.html' with article=article %}
+{% endcomment %}
+<div class="compact-news-item" id="compact-card-{{ article.slug }}">
+  <div class="compact-news-meta">
+    <span class="cat-pill {{ article.category.badge_class }}" style="padding: 0.15rem 0.5rem; font-size: 0.7rem;">{{ article.category.name }}</span>
+    <span class="compact-time">{{ article.get_time_ago }}</span>
+  </div>
+  
+  <h4 class="compact-news-title" data-open-article="{{ article.slug }}">
+    {{ article.title }}
+  </h4>
+
+  <div class="compact-news-footer">
+    <span class="compact-source">{{ article.source_name }}</span>
+    <div style="display: flex; align-items: center; gap: 0.4rem;">
+      <span class="compact-impact">★ {{ article.impact_score }}</span>
+      <button class="icon-action-btn" data-bookmark-slug="{{ article.slug }}" style="width: 28px; height: 28px;" title="Bookmark">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

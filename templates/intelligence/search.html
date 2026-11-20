@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advanced Intelligence Search – TRENDORA{% endblock %}
+
+{% block content %}
+<div class="trend-container" style="padding-top: 2rem;">
+
+  <!-- Search Header -->
+  <div class="search-page-header">
+    <div class="section-label-pill" style="margin-bottom: 0.6rem;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      GLOBAL INTELLIGENCE QUERY ENGINE
+    </div>
+    <h1 class="search-page-title">Advanced News & Trend Search</h1>
+    <p class="search-page-subtitle">
+      Query across 48,000+ continuous global intelligence feeds. Filter by domain, publication date, source wire, and impact score.
+    </p>
+
+    <!-- Large Search Input Box -->
+    <div class="search-page-input-wrapper">
+      <div class="search-input-shell" style="padding: 0.5rem 0.6rem 0.5rem 1.6rem;">
+        <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width: 24px; height: 24px;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          id="advancedSearchInput" 
+          class="main-search-input" 
+          placeholder="Search by topic, keyword, company, policy directive, or breaking event..."
+          value="{{ query|default:'' }}"
+          autocomplete="off"
+        >
+        <div class="search-actions-right">
+          <button id="advClearBtn" class="clear-search-btn" title="Clear search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <span class="kbd-shortcut">/</span>
+          <button id="advSearchSubmitBtn" class="search-submit-btn">
+            <span>Query Intel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Suggested Keywords -->
+      <div class="suggested-queries-row">
+        <span class="suggest-label">Trending Inquiries:</span>
+        <button class="suggest-tag-btn" data-query="Neuromorphic AI">Neuromorphic AI</button>
+        <button class="suggest-tag-btn" data-query="Tokamak Fusion">Tokamak Fusion</button>
+        <button class="suggest-tag-btn" data-query="Silicon Photonics">Silicon Photonics</button>
+        <button class="suggest-tag-btn" data-query="Majorana Quantum">Majorana Quantum</button>
+        <button class="suggest-tag-btn" data-query="Sovereign AI">Sovereign AI</button>
+        <button class="suggest-tag-btn" data-query="Geneva AI Treaty">Geneva AI Treaty</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advanced Interactive Filters Bar -->
+  <div class="adv-filters-control-bar">
+    <div class="adv-filters-left">
+      <!-- Category Filter -->
+      <div class="filter-group">
+        <label for="filterCategory" class="filter-label">Domain / Category</label>
+        <select id="filterCategory" class="custom-select adv-filter-select">
+          <option value="all">All Domains</option>
+          {% for cat in categories %}
+            <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Date Filter -->
+      <div class="filter-group">
+        <label for="filterDate" class="filter-label">Time Window</label>
+        <select id="filterDate" class="custom-select adv-filter-select">
+          <option value="all" {% if selected_date == 'all' %}selected{% endif %}>All Time</option>
+          <option value="today" {% if selected_date == 'today' %}selected{% endif %}>Past 24 Hours</option>
+          <option value="week" {% if selected_date == 'week' %}selected{% endif %}>Past 7 Days</option>
+          <option value="month" {% if selected_date == 'month' %}selected{% endif %}>Past 30 Days</option>
+        </select>
+      </div>
+
+      <!-- Source Filter -->
+      <div class="filter-group">
+        <label for="filterSource" class="filter-label">Source Wire</label>
+        <select id="filterSource" class="custom-select adv-filter-select">
+          <option value="all">All Sources</option>
+          {% for src in sources %}
+            <option value="{{ src }}" {% if selected_source == src %}selected{% endif %}>{{ src }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Relevance / Sort Filter -->
+      <div class="filter-group">
+        <label for="filterSort" class="filter-label">Sort By</label>
+        <select id="filterSort" class="custom-select adv-filter-select">
+          <option value="relevance" {% if selected_sort == 'relevance' %}selected{% endif %}>Highest Impact Score</option>
+          <option value="latest" {% if selected_sort == 'latest' %}selected{% endif %}>Latest Published</option>
+          <option value="velocity" {% if selected_sort == 'velocity' %}selected{% endif %}>Trending Velocity</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="adv-filters-right">
+      <button id="advResetFiltersBtn" class="btn-reset-filters" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+        Reset Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Results Meta Bar -->
+  <div class="search-results-meta">
+    <div style="display: flex; align-items: center; gap: 0.6rem;">
+      <span class="status-indicator-dot"></span>
+      <span style="font-size: 0.9rem; color: var(--text-secondary);">
+        Query Results: <strong id="advResultsCount" style="color: #fff; font-family: var(--font-mono);">{{ articles.count }}</strong> signals decoded
+      </span>
+    </div>
+    <div id="activeQueryDisplay" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--purple-light);">
+      {% if query %}Filter: "{{ query }}"{% endif %}
+    </div>
+  </div>
+
+  <!-- News Cards Stream Grid -->
+  <div class="articles-stream-grid" id="advResultsGrid" style="margin-bottom: 4rem;">
+    {% for article in articles %}
+      {% include 'components/news_card.html' with article=article %}
+    {% empty %}
+      <div class="empty-results-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"></line>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+        <h3 class="empty-title">No Intelligence Dispatches Matched</h3>
+        <p class="empty-sub">Try broadening your search query or selecting "All Domains" and "All Time".</p>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Embedded JSON Data for client-side search handling -->
+<script type="application/json" id="advArticlesJson">{{ articles_json|safe }}</script>
+{% endblock %}

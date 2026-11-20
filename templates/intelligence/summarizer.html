@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI News Summarizer – TRENDORA{% endblock %}
+
+{% block content %}
+<div class="trend-container" style="padding-top: 2rem;">
+
+  <div class="page-title-banner">
+    <div class="section-label-pill" style="margin-bottom: 0.6rem;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+      AUTONOMOUS SYNTHESIS ENGINE
+    </div>
+    <h1 class="search-page-title">AI News Summarizer</h1>
+    <p class="search-page-subtitle">
+      Synthesize lengthy research papers, earnings calls, or breaking dispatches into actionable executive intelligence briefs within seconds.
+    </p>
+  </div>
+
+  <div class="summarizer-grid-container">
+    <!-- Left Column: Input Form -->
+    <div class="summarizer-input-panel">
+      <div class="panel-section-title">
+        <span class="status-indicator-dot"></span>
+        <span>1. INPUT DISPATCH SOURCE</span>
+      </div>
+
+      <!-- URL Input Field -->
+      <div class="summarizer-form-group">
+        <label for="articleUrlInput" class="summarizer-label">Article or Wire URL (Optional)</label>
+        <div class="input-with-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+          <input 
+            type="url" 
+            id="articleUrlInput" 
+            class="summarizer-text-input" 
+            placeholder="https://reuters.com/technology/quantum-milestone..."
+          >
+        </div>
+      </div>
+
+      <div class="or-divider">
+        <span>OR PASTE RAW ARTICLE TEXT</span>
+      </div>
+
+      <!-- Raw Text Input Field -->
+      <div class="summarizer-form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <label for="articleTextInput" class="summarizer-label">Article Text Content</label>
+          <span id="charCountText" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">0 words</span>
+        </div>
+        <textarea 
+          id="articleTextInput" 
+          class="summarizer-textarea" 
+          rows="10" 
+          placeholder="Paste dispatch, corporate filing, scientific abstract, or policy transcript here..."
+        ></textarea>
+      </div>
+
+      <!-- Format Selector -->
+      <div class="summarizer-form-group">
+        <label class="summarizer-label">2. CHOOSE SUMMARY FORMAT</label>
+        <div class="format-options-grid">
+          <button type="button" class="format-option-btn active" data-format="short">
+            <span class="format-title">⚡ Short Summary</span>
+            <span class="format-desc">2-sentence executive TL;DR for rapid situational scanning.</span>
+          </button>
+          <button type="button" class="format-option-btn" data-format="detailed">
+            <span class="format-title">📄 Detailed Summary</span>
+            <span class="format-desc">Structured 3-paragraph contextual briefing with implications.</span>
+          </button>
+          <button type="button" class="format-option-btn" data-format="keypoints">
+            <span class="format-title">🎯 Key Strategic Points</span>
+            <span class="format-desc">Actionable bullet synthesis with highlighted core metrics.</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="summarizer-action-bar">
+        <button id="btnSummarizeSubmit" class="btn-primary-intel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>Synthesize Summary</span>
+        </button>
+
+        <button id="btnLoadSample" class="btn-secondary-intel" title="Load sample news for testing">
+          Load Sample
+        </button>
+
+        <button id="btnClearInput" class="btn-secondary-intel" title="Clear all fields">
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Column: Output Section -->
+    <div class="summarizer-output-panel">
+      <div class="panel-section-title" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="status-indicator-dot"></span>
+          <span>INTELLIGENCE SYNTHESIS OUTPUT</span>
+        </div>
+        <div class="output-tools" id="outputTools" style="display: none;">
+          <button id="btnCopySummary" class="icon-action-btn" title="Copy Summary Text">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading Animation -->
+      <div class="summarizer-loading-state" id="summarizerLoading" style="display: none;">
+        <div class="cyber-spinner"></div>
+        <h4 class="loading-status-text" id="loadingStatusText">Analyzing syntactic tokens...</h4>
+        <p class="loading-sub">Running natural language summarization models across document tokens</p>
+      </div>
+
+      <!-- Empty Initial State -->
+      <div class="summarizer-placeholder" id="summarizerPlaceholder">
+        <div class="empty-icon-box">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">Awaiting Dispatch Input</h3>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); max-width: 380px; margin: 0 auto;">
+          Enter an article link or paste text on the left, choose your desired summary format, and click "Synthesize Summary".
+        </p>
+      </div>
+
+      <!-- Real Output Content -->
+      <div class="summarizer-result-box" id="summarizerResult" style="display: none;">
+        <div class="result-meta-header">
+          <span class="cat-pill badge-purple" id="resultFormatBadge">Short Summary</span>
+          <span class="compression-metric" id="compressionMetric">Estimated 82% time saved</span>
+        </div>
+
+        <div class="result-text-body" id="resultTextBody">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <div class="result-footer-metrics">
+          <span id="outputWordCount">Words: 48</span>
+          <span>•</span>
+          <span id="outputReadTime">Reading Time: ~20s</span>
+          <span>•</span>
+          <span style="color: var(--emerald-accent);">Status: Verified Synthesis</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

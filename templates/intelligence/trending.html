@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Trending Topics & Velocity Radar – TRENDORA{% endblock %}
+
+{% block content %}
+<div class="trend-container" style="padding-top: 2rem;">
+
+  <!-- Hero Header for Trending Radar -->
+  <div class="trending-page-hero">
+    <div class="section-label-pill" style="margin-bottom: 0.6rem;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+      REAL-TIME VELOCITY RADAR
+    </div>
+    <h1 class="trending-page-title">Global Trending Macro Topics</h1>
+    <p class="trending-page-subtitle">
+      Autonomous pattern recognition across 6 major domains: Technology, Business, Politics, Sports, Science, and Entertainment. Measured by signal acceleration and cross-border mention velocity.
+    </p>
+
+    <!-- Radar Metrics Ticker Strip -->
+    <div class="radar-telemetry-strip">
+      <div class="radar-strip-item">
+        <span class="strip-label">ACTIVE RADAR CLUSTERS:</span>
+        <span class="strip-val">{{ trending_topics.count }} Topics</span>
+      </div>
+      <div class="radar-strip-item">
+        <span class="strip-label">VELOCITY THRESHOLD:</span>
+        <span class="strip-val" style="color: var(--emerald-accent);">+150% Acceleration Min</span>
+      </div>
+      <div class="radar-strip-item">
+        <span class="strip-label">HOTTEST TOPIC:</span>
+        <span class="strip-val" style="color: var(--purple-light);">{{ trending_topics.first.title }}</span>
+      </div>
+      <div class="radar-strip-item">
+        <span class="strip-label">SAMPLING INTERVAL:</span>
+        <span class="strip-val">15 Seconds</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Domain Filter Bar -->
+  <div class="trending-domain-tabs" id="trendingDomainTabs">
+    <button class="domain-tab-btn active" data-domain="all">All Domains ({{ trending_topics.count }})</button>
+    {% for cat in categories %}
+      <button class="domain-tab-btn" data-domain="{{ cat.slug }}">
+        <span>{{ cat.name }}</span>
+      </button>
+    {% endfor %}
+  </div>
+
+  <!-- Trending Topics Grid -->
+  <div class="trending-cards-showcase-grid" id="trendingCardsGrid">
+    {% for topic in trending_topics %}
+      <div class="trending-master-card" data-domain="{{ topic.category.slug }}">
+        <!-- Top Card Meta -->
+        <div class="trend-master-head">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span class="trend-rank-badge">#0{{ forloop.counter }}</span>
+            <span class="cat-pill {{ topic.category.badge_class }}">{{ topic.category.name }}</span>
+            {% if topic.is_hot %}
+              <span class="hot-flame-pill">🔥 BREAKOUT</span>
+            {% endif %}
+          </div>
+          <span class="movement-indicator-badge {{ topic.trend_direction }}">
+            {{ topic.movement_text }}
+          </span>
+        </div>
+
+        <!-- Title & Summary -->
+        <h3 class="trend-master-title">{{ topic.title }}</h3>
+        <p class="trend-master-summary">{{ topic.summary }}</p>
+
+        <!-- Popularity & Article Counts -->
+        <div class="trend-stats-box">
+          <div class="trend-stat-row">
+            <span class="stat-name">Signal Volume:</span>
+            <span class="stat-number">{{ topic.volume_mentions|floatformat:"0" }} mentions</span>
+          </div>
+          <div class="trend-stat-row">
+            <span class="stat-name">Dispatches Tracked:</span>
+            <span class="stat-number">{{ topic.article_count }} articles</span>
+          </div>
+          <div class="trend-stat-row">
+            <span class="stat-name">Sentiment Bias:</span>
+            <span class="sentiment-pill sentiment-{{ topic.sentiment|lower|slugify }}">{{ topic.get_sentiment_display }}</span>
+          </div>
+        </div>
+
+        <!-- Velocity Sparkline & Percentage -->
+        <div class="trend-sparkline-row">
+          <div class="sparkline-info">
+            <div class="velocity-text">▲ +{{ topic.velocity_percentage }}%</div>
+            <div class="velocity-label">1h Momentum</div>
+          </div>
+          <svg class="sparkline-svg" viewBox="0 0 90 28" preserveAspectRatio="none">
+            <polyline 
+              class="sparkline-line"
+              points="0,22 15,18 30,20 45,12 60,10 75,6 90,2"
+            />
+          </svg>
+        </div>
+
+        <!-- Action Link -->
+        <div class="trend-card-footer">
+          <a href="{% url 'intelligence:advanced_search' %}?q={{ topic.title }}" class="btn-read-dispatches">
+            <span>Explore {{ topic.article_count }} Dispatches</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

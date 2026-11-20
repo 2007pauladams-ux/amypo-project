@@ -1,0 +1,108 @@
+{% comment %}
+Reusable Featured News Article Card Component for TRENDORA
+Usage: {% include 'components/news_card_featured.html' with article=article %}
+{% endcomment %}
+<div class="featured-story-card" id="featured-card-{{ article.slug }}">
+  <div class="featured-left-intel">
+    <div>
+      <div class="featured-meta-header">
+        <span class="breakthrough-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          FEATURED BREAKTHROUGH
+        </span>
+        <span class="cat-pill {{ article.category.badge_class }}">{{ article.category.name }}</span>
+        <span class="source-stamp">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          {{ article.source_name }}
+        </span>
+        <span class="time-stamp">• {{ article.published_at|date:"M d, Y" }}</span>
+      </div>
+
+      <h2 class="featured-headline" data-open-article="{{ article.slug }}">
+        {{ article.title }}
+      </h2>
+
+      <p class="featured-summary">
+        {{ article.summary }}
+      </p>
+
+      {% if article.get_takeaways %}
+      <div class="key-takeaways-box">
+        <div class="takeaways-heading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          Executive Synthesis Takeaways
+        </div>
+        <ul class="takeaways-list">
+          {% for bullet in article.get_takeaways %}
+            <li class="takeaway-bullet">{{ bullet }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="featured-footer-actions">
+      <button class="btn-primary-intel" data-open-article="{{ article.slug }}">
+        <span>Read Full Intel Report</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+
+      <div class="quick-action-btns">
+        <button class="icon-action-btn" data-bookmark-slug="{{ article.slug }}" title="Bookmark this report">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </button>
+        <button class="icon-action-btn" data-share-slug="{{ article.slug }}" title="Share Dispatch Link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="featured-right-visual" style="background: {{ article.image_gradient }};">
+    <div class="radar-grid-bg"></div>
+    <div class="radar-sweep-beam"></div>
+
+    <div class="intel-score-gauge-card">
+      <div class="gauge-header">
+        <span class="gauge-title">SIGNAL IMPACT INDEX</span>
+        <span class="sentiment-pill sentiment-{{ article.sentiment|lower|slugify }}">{{ article.sentiment }}</span>
+      </div>
+      <div class="score-display">
+        <span class="score-big">{{ article.impact_score }}</span>
+        <span class="score-scale">/ 100</span>
+      </div>
+      <div class="impact-bar-track">
+        <div class="impact-bar-fill" style="width: {{ article.impact_score }}%;"></div>
+      </div>
+    </div>
+
+    <div class="velocity-stats-grid">
+      <div class="v-stat-tile">
+        <div class="v-stat-label">Trend Velocity</div>
+        <div class="v-stat-val">{{ article.velocity_score }}</div>
+      </div>
+      <div class="v-stat-tile">
+        <div class="v-stat-label">Signals Monitored</div>
+        <div class="v-stat-val" style="color: var(--cyan-accent);">{{ article.views_count }} req/m</div>
+      </div>
+    </div>
+  </div>
+</div>

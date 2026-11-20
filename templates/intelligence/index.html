@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}TRENDORA – Real-Time News and Trend Intelligence{% endblock %}
+
+{% block content %}
+<div class="trend-container">
+
+  <!-- ========================================================================
+       HERO INTELLIGENCE & PROMINENT SEARCH SECTION
+       ======================================================================== -->
+  <section class="hero-section" id="heroSection">
+    <!-- Glowing Accent Orbs -->
+    <div class="hero-glow-orb orb-purple"></div>
+    <div class="hero-glow-orb orb-cyan"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge-pill">
+        <span class="hero-badge-dot"></span>
+        <span>REAL-TIME INTELLIGENCE ENGINE v3.4 • 48K+ GLOBAL SIGNALS</span>
+      </div>
+
+      <h1 class="hero-title">
+        Real-Time News and <br>
+        <span class="gradient-text">Trend Intelligence</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Autonomous synthesis of frontier technologies, market shifts, and macro signals before they hit mainstream headlines. Unfiltered, verified, and ranked by velocity.
+      </p>
+
+      <!-- Prominent News Search Bar -->
+      <div class="search-bar-hero-wrapper">
+        <div class="search-input-shell">
+          <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+
+          <input 
+            type="text" 
+            id="mainSearchInput" 
+            class="main-search-input" 
+            placeholder="Search breaking dispatches, technologies, chips, quantum, macro trends..."
+            aria-label="Search intelligence"
+            autocomplete="off"
+            spellcheck="false"
+          >
+
+          <div class="search-actions-right">
+            <button id="clearSearchBtn" class="clear-search-btn" aria-label="Clear search query" title="Clear search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <span class="kbd-shortcut" title="Press / or Ctrl+K to search">/</span>
+            <button class="search-submit-btn" id="searchSubmitBtn" type="button" aria-label="Search">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              <span>Search</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <nav class="category-filter-pills" aria-label="Category Filters">
+          <button class="cat-pill active" data-category="all">
+            <span>All Streams</span>
+            <span class="cat-pill-count">{{ latest_articles.count }}</span>
+          </button>
+          {% for category in categories %}
+            <button class="cat-pill" data-category="{{ category.slug }}">
+              <span>{{ category.name }}</span>
+              <span class="cat-pill-count">{{ category.total_articles }}</span>
+            </button>
+          {% endfor %}
+        </nav>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         BREAKTHROUGH STORY SPOTLIGHT CARD
+         ====================================================================== -->
+    {% if featured_article %}
+    <div class="featured-story-container">
+      <div class="featured-story-card">
+        <!-- Left Intel Summary -->
+        <div class="featured-left-intel">
+          <div>
+            <div class="featured-meta-header">
+              <span class="breakthrough-tag">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                BREAKTHROUGH SPOTLIGHT
+              </span>
+              <span class="cat-pill {{ featured_article.category.badge_class }}">{{ featured_article.category.name }}</span>
+              <span class="source-stamp">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                {{ featured_article.source_name }}
+              </span>
+              <span class="time-stamp">• {{ featured_article.get_time_ago }}</span>
+            </div>
+
+            <h2 class="featured-headline" data-open-article="{{ featured_article.slug }}">
+              {{ featured_article.title }}
+            </h2>
+
+            <p class="featured-summary">
+              {{ featured_article.summary }}
+            </p>
+
+            <!-- Key Takeaways Box -->
+            <div class="key-takeaways-box">
+              <div class="takeaways-heading">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                Executive Synthesis Takeaways
+              </div>
+              <ul class="takeaways-list">
+                {% for bullet in featured_article.get_takeaways %}
+                  <li class="takeaway-bullet">{{ bullet }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Bottom Actions -->
+          <div class="featured-footer-actions">
+            <button class="btn-primary-intel" data-open-article="{{ featured_article.slug }}">
+              <span>Read Full Intel Report</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+            <div class="quick-action-btns">
+              <button class="icon-action-btn" data-bookmark-slug="{{ featured_article.slug }}" title="Bookmark this report">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </button>
+              <button class="icon-action-btn" data-share-slug="{{ featured_article.slug }}" title="Share Dispatch Link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Visual Radar Graphic & Intelligence Score -->
+        <div class="featured-right-visual">
+          <div class="radar-grid-bg"></div>
+          <div class="radar-sweep-beam"></div>
+
+          <div class="intel-score-gauge-card">
+            <div class="gauge-header">
+              <span class="gauge-title">SIGNAL IMPACT INDEX</span>
+              <span class="sentiment-pill sentiment-bullish">{{ featured_article.sentiment }}</span>
+            </div>
+            <div class="score-display">
+              <span class="score-big">{{ featured_article.impact_score }}</span>
+              <span class="score-scale">/ 100</span>
+            </div>
+            <div class="impact-bar-track">
+              <div class="impact-bar-fill" style="width: {{ featured_article.impact_score }}%;"></div>
+            </div>
+          </div>
+
+          <div class="velocity-stats-grid">
+            <div class="v-stat-tile">
+              <div class="v-stat-label">Trend Velocity</div>
+              <div class="v-stat-val">{{ featured_article.velocity_score }}</div>
+            </div>
+            <div class="v-stat-tile">
+              <div class="v-stat-label">Active Signals</div>
+              <div class="v-stat-val" style="color: var(--cyan-accent);">{{ featured_article.views_count }} req/m</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ========================================================================
+       TELEMETRY KPI METRICS ROW
+       ======================================================================== -->
+  <section class="telemetry-row" id="telemetrySection" aria-label="Global Intelligence Telemetry">
+    <div class="telemetry-card">
+      <div class="telemetry-header">
+        <span class="telemetry-label">Tracked Signals</span>
+        <svg class="telemetry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      </div>
+      <div class="telemetry-value">{{ stats.total_signals }}</div>
+      <div class="telemetry-sub">
+        <span class="positive">▲ +12.4%</span>
+        <span>over past 24h</span>
+      </div>
+    </div>
+
+    <div class="telemetry-card">
+      <div class="telemetry-header">
+        <span class="telemetry-label">Active Clusters</span>
+        <svg class="telemetry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </div>
+      <div class="telemetry-value">{{ stats.active_clusters }}</div>
+      <div class="telemetry-sub">
+        <span class="positive">● 6 Breakout</span>
+        <span>topics today</span>
+      </div>
+    </div>
+
+    <div class="telemetry-card">
+      <div class="telemetry-header">
+        <span class="telemetry-label">Sentiment Index</span>
+        <svg class="telemetry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      <div class="telemetry-value">{{ stats.sentiment_bullish }}</div>
+      <div class="telemetry-sub">
+        <span class="positive">Bullish Bias</span>
+        <span>across tech sector</span>
+      </div>
+    </div>
+
+    <div class="telemetry-card">
+      <div class="telemetry-header">
+        <span class="telemetry-label">Processing Latency</span>
+        <svg class="telemetry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+      </div>
+      <div class="telemetry-value">{{ stats.avg_latency }}</div>
+      <div class="telemetry-sub">
+        <span class="positive">Real-time</span>
+        <span>edge pipeline active</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       TRENDING TOPICS & VELOCITY RADAR SECTION
+       ======================================================================== -->
+  <section class="section-wrapper" id="trendingSection" aria-label="Trending Topics Radar">
+    <div class="section-header-row">
+      <div class="section-title-group">
+        <div class="section-label-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          VELOCITY RADAR
+        </div>
+        <h2 class="section-heading">Trending Macro Clusters</h2>
+        <p class="section-subtext">Click any trend card to instantly filter associated dispatches.</p>
+      </div>
+    </div>
+
+    <div class="trending-grid">
+      {% for topic in trending_topics %}
+        <div class="trend-card" data-topic-slug="{{ topic.slug }}">
+          <div>
+            <div class="trend-card-top">
+              <span class="trend-rank">#0{{ forloop.counter }}</span>
+              <span class="trend-cat-badge {{ topic.category.badge_class }}">{{ topic.category.name }}</span>
+            </div>
+
+            <h3 class="trend-card-title">{{ topic.title }}</h3>
+            <p class="trend-card-summary">{{ topic.summary }}</p>
+          </div>
+
+          <div class="trend-metrics-row">
+            <div>
+              <div class="velocity-badge">
+                ▲ +{{ topic.velocity_percentage }}%
+              </div>
+              <div class="volume-signals">{{ topic.volume_mentions|floatformat:"0" }} signals</div>
+            </div>
+
+            <!-- Dynamic SVG Sparkline -->
+            <svg class="sparkline-svg" viewBox="0 0 90 28" preserveAspectRatio="none">
+              <polyline 
+                class="sparkline-line"
+                points="0,22 15,18 30,20 45,12 60,10 75,6 90,2"
+              />
+            </svg>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       LATEST HEADLINES INTELLIGENCE SECTION
+       ======================================================================== -->
+  <section class="section-wrapper" id="headlinesSection" aria-label="Latest Headlines Intelligence Feed">
+    <div class="section-header-row">
+      <div class="section-title-group">
+        <div class="section-label-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 14 14"></polyline>
+          </svg>
+          LIVE DISPATCH STREAM
+        </div>
+        <h2 class="section-heading">Latest Intelligence Headlines</h2>
+      </div>
+
+      <!-- Feed Controls -->
+      <div class="feed-right-controls">
+        <label for="sortSelect" style="display:none;">Sort Feed</label>
+        <select id="sortSelect" class="custom-select" aria-label="Sort Articles">
+          <option value="latest">Sort: Latest Signals</option>
+          <option value="impact">Sort: Highest Impact Score</option>
+          <option value="velocity">Sort: Trending Velocity</option>
+        </select>
+
+        <!-- View Switcher -->
+        <div class="view-toggle-group">
+          <button id="viewGridBtn" class="view-toggle-btn active" title="Grid View" aria-label="Grid view">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </button>
+          <button id="viewListBtn" class="view-toggle-btn" title="Compact Terminal View" aria-label="Terminal list view">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filter Summary Bar -->
+    <div class="feed-controls-bar">
+      <div class="feed-filter-summary">
+        <span>Active Feed:</span>
+        <strong id="activeFilterName" style="color: #fff;">All Streams</strong>
+        <span>•</span>
+        <span id="feedResultsCount" class="feed-results-count">{{ latest_articles.count }}</span>
+        <span>signals decoded</span>
+      </div>
+    </div>
+
+    <!-- Articles Stream Grid (Populated & Filtered by Vanilla JS) -->
+    <div class="articles-stream-grid" id="articlesStreamGrid">
+      <!-- Fallback Server-Side Rendered Cards (Re-rendered reactively by vanilla JS) -->
+      {% for article in latest_articles %}
+        <article class="article-intel-card" id="article-card-{{ article.slug }}">
+          <div class="article-card-header">
+            <div class="article-source-row">
+              <span class="source-dot" style="background: {{ article.category.color_code }};"></span>
+              <span>{{ article.source_name }}</span>
+            </div>
+            <span class="impact-score-pill">IMPACT {{ article.impact_score }}/100</span>
+          </div>
+
+          <h3 class="article-card-title" data-open-article="{{ article.slug }}">
+            {{ article.title }}
+          </h3>
+
+          <p class="article-card-summary">
+            {{ article.summary }}
+          </p>
+
+          <div class="article-card-meta">
+            <span class="sentiment-pill sentiment-{{ article.sentiment|lower|slugify }}">{{ article.sentiment }}</span>
+            <span>•</span>
+            <span>{{ article.get_time_ago }}</span>
+            <span>•</span>
+            <span>{{ article.read_time_minutes }} min read</span>
+          </div>
+
+          <div class="article-card-actions">
+            <button class="read-intel-btn" data-open-article="{{ article.slug }}">
+              Analyze Signal
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+
+            <div class="quick-action-btns">
+              <button class="icon-action-btn" data-bookmark-slug="{{ article.slug }}" title="Bookmark Dispatch">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </button>
+              <button class="icon-action-btn" data-share-slug="{{ article.slug }}" title="Share Dispatch">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+</div>
+
+<!-- Embedded JSON Data for Instant Vanilla JavaScript Interaction -->
+<script type="application/json" id="articlesJsonData">{{ articles_json|safe }}</script>
+<script type="application/json" id="categoriesJsonData">{{ categories_json|safe }}</script>
+<script type="application/json" id="trendingJsonData">{{ trending_json|safe }}</script>
+
+{% endblock %}
