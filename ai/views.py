@@ -1,19 +1,24 @@
 import json
-import re
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 
+from .services.groq_service import GroqService
 from .services.summarizer_service import AiSummarizerService
 from .services.trendbot_service import TrendBotService
+from .services.rag_service import RagPipeline
+from .services.sentiment_service import SentimentAnalysisService
+from .services.trend_intelligence_service import TrendIntelligenceService
+from .services.vector_store import FaissVectorStore
+
 from news.models import NewsArticle
 from trends.models import TrendingTopic
 
 def summarizer_view(request):
     """
     AI News Summarizer page for TRENDORA.
-    Supports article URL input, text input area, and formats (Short, Detailed, Key Points).
+    Accepts article URL or text, generates Short, Detailed, or Key Points summaries via Groq LLM.
     """
     breaking_news = NewsArticle.objects.filter(is_breaking=True).order_by('-published_at')[:6]
     sample_articles = NewsArticle.objects.all().order_by('-impact_score')[:4]
@@ -27,17 +32,18 @@ def summarizer_view(request):
 
 def ask_ai_view(request):
     """
-    Interactive TrendBot Chatbot interface.
+    Interactive TrendBot AI Chatbot interface.
+    Powered by the RAG pipeline and Groq LLM.
     """
     breaking_news = NewsArticle.objects.filter(is_breaking=True).order_by('-published_at')[:6]
     trending_topics = TrendingTopic.objects.all().order_by('-calculated_score')[:5]
 
     suggested_questions = [
         "What are today's top technology trends?",
-        "Summarize the latest business news.",
+        "Summarize recent semiconductor breakthroughs",
         "What is happening in quantum computing?",
         "Show breaking dispatches",
-        "Explain high-NA EUV lithography",
+        "Explain sovereign digital reserves",
     ]
 
     context = {
@@ -51,7 +57,7 @@ def ask_ai_view(request):
 @require_POST
 def api_summarize(request):
     """
-    JSON API endpoint for AI news summarization.
+    JSON API endpoint for AI news summarization using Groq LLM.
     POST /api/summarize/
     Payload: {"text": "...", "url": "...", "format": "short"|"detailed"|"keypoints"}
     """
@@ -79,46 +85,15 @@ def api_summarize(request):
 
     service = AiSummarizerService()
     result = service.summarize(text=text, url=url, format_type=format_type)
-
-    raw_summary = result.get('summary', '')
-    # Convert simple markdown to html for innerHTML rendering
-    html_summary = raw_summary.replace('\n\n', '<br><br>').replace('\n', '<br>')
-    html_summary = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html_summary)
-    html_summary = re.sub(r'\*(.*?)\*', r'<em>\1</em>', html_summary)
-    html_summary = re.sub(r'### (.*?)<br>', r'<h3 style="color:var(--purple-light); margin:0.8rem 0 0.4rem;">\1</h3>', html_summary)
-    html_summary = re.sub(r'#### (.*?)<br>', r'<h4 style="color:var(--text-primary); margin:0.6rem 0 0.3rem;">\1</h4>', html_summary)
-
-    format_labels = {
-        'short': 'Short Executive Summary',
-        'detailed': 'Detailed Strategic Briefing',
-        'keypoints': 'Actionable Key Points'
-    }
-
-    words_orig = result.get('original_word_count', 0)
-    words_summ = result.get('summary_word_count', 0)
-    saved_pct = max(10, min(85, int((1 - (words_summ / max(words_orig, 1))) * 100)))
-
-    return JsonResponse({
-        'status': 'success',
-        'format': format_type,
-        'format_label': format_labels.get(format_type, 'Summary Briefing'),
-        'saved_percentage': saved_pct,
-        'words_original': words_orig,
-        'words_summary': words_summ,
-        'summary': html_summary,
-        'raw_summary': raw_summary,
-        'title': result.get('title', ''),
-        'source': result.get('source', ''),
-        'estimated_read_time': result.get('estimated_read_time', '1 min read'),
-    })
+    return JsonResponse(result)
 
 
 @require_POST
 def api_chat(request):
     """
-    JSON API endpoint for TrendBot conversational interaction.
+    JSON API endpoint for TrendBot RAG chatbot interaction.
     POST /api/chat/
-    Payload: {"message": "..."}
+    Payload: {"message": "...", "history": [...]}
     """
     data = {}
     if request.content_type == 'application/json':
@@ -130,19 +105,112 @@ def api_chat(request):
         data = request.POST
 
     message = data.get('message', '').strip()
-    service = TrendBotService()
-    result = service.process_message(user_message=message, user=request.user)
+    history = data.get('history', [])
 
-    raw_reply = result.get('response', '')
-    # Convert markdown to html for bubble-text
-    html_reply = raw_reply.replace('\n\n', '<br><br>').replace('\n', '<br>')
-    html_reply = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html_reply)
-    html_reply = re.sub(r'\*(.*?)\*', r'<em>\1</em>', html_reply)
+    service = TrendBotService()
+    result = service.process_message(
+        user_message=message,
+        user=request.user if request.user.is_authenticated else None,
+        conversation_history=history
+    )
 
     return JsonResponse({
         'status': 'success',
-        'reply': html_reply,
-        'message': html_reply,
-        'raw_message': raw_reply,
+        'reply': result.get('reply', ''),
+        'message': result.get('reply', ''),
+        'raw_reply': result.get('raw_reply', ''),
+        'citations': result.get('citations', []),
         'suggestions': result.get('suggestions', []),
+        'context_count': result.get('context_count', 0),
+    })
+
+
+@require_POST
+def api_rag_query(request):
+    """
+    Direct RAG semantic search and answer endpoint.
+    POST /api/rag/
+    Payload: {"query": "...", "top_k": 4}
+    """
+    data = {}
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except Exception:
+            data = {}
+    else:
+        data = request.POST
+
+    query = data.get('query', '').strip()
+    top_k = min(int(data.get('top_k', 4)), 10)
+
+    if not query:
+        return JsonResponse({'status': 'error', 'message': 'Query cannot be empty.'}, status=400)
+
+    pipeline = RagPipeline()
+    result = pipeline.run_rag(query=query, top_k=top_k)
+    return JsonResponse(result)
+
+
+@require_POST
+def api_sentiment(request):
+    """
+    Sentiment analysis endpoint.
+    POST /api/sentiment/
+    Payload: {"article_id": 1} OR {"title": "...", "text": "..."}
+    """
+    data = {}
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except Exception:
+            data = {}
+    else:
+        data = request.POST
+
+    service = SentimentAnalysisService()
+
+    article_id = data.get('article_id')
+    if article_id:
+        result = service.analyze_and_update_article(article_id)
+        return JsonResponse(result)
+
+    title = data.get('title', '').strip()
+    text = data.get('text', '').strip()
+    if not title and not text:
+        return JsonResponse({'status': 'error', 'message': 'Either article_id or title/text is required.'}, status=400)
+
+    result = service.analyze_text(title, text)
+    return JsonResponse(result)
+
+
+@require_GET
+def api_trend_intelligence(request):
+    """
+    AI-assisted trend intelligence endpoint.
+    GET /api/trends/intelligence/?topic=<topic_id_or_slug>
+    """
+    topic_query = request.GET.get('topic', '').strip()
+    service = TrendIntelligenceService()
+
+    if topic_query:
+        result = service.analyze_trending_topic(topic_query)
+        return JsonResponse(result)
+
+    all_results = service.analyze_all_trends()
+    return JsonResponse({'status': 'success', 'trends_intelligence': all_results})
+
+
+@require_POST
+def api_faiss_reindex(request):
+    """
+    Triggers re-indexing of all database news articles into FAISS vector store.
+    POST /api/faiss/reindex/
+    """
+    store = FaissVectorStore()
+    count = store.rebuild_index_from_db()
+    return JsonResponse({
+        'status': 'success',
+        'message': f'FAISS index rebuilt with {count} documents.',
+        'total_indexed': store.count()
     })

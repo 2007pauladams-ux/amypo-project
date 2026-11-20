@@ -1,117 +1,137 @@
 import re
+import logging
 import requests
 from urllib.parse import urlparse
-from django.utils.text import Truncator
 from news.models import NewsArticle
+from .groq_service import GroqService
+
+logger = logging.getLogger('trendora.summarizer')
 
 class AiSummarizerService:
     """
-    Intelligent summarization engine for TRENDORA.
-    Supports input via direct text or URL resolution, generating Short, Detailed,
-    and Key Points summary formats.
+    AI-powered news summarization engine for TRENDORA utilizing the Groq LLM API.
+    Generates three grounded summary formats (Short Summary, Detailed Summary, Key Points)
+    strictly based on supplied article content with zero external hallucination.
     """
+
+    def __init__(self, groq_service=None):
+        self.groq_service = groq_service or GroqService()
 
     def summarize(self, text='', url='', format_type='short'):
         """
-        Main entry point for text/URL summarization.
-        format_type can be 'short', 'detailed', or 'keypoints'.
+        Main entry point for article text/URL summarization.
+        format_type: 'short' | 'detailed' | 'keypoints'.
         """
-        article_title = "Input Signal Briefing"
-        article_source = "Analyst Submission"
+        article_title = "Submitted Intelligence Dispatch"
+        article_source = "Analyst Direct Input"
 
-        # If URL provided, check database first, else fetch basic content
+        # 1. Resolve URL if provided and text is empty
         if url and not text.strip():
             url = url.strip()
             existing = NewsArticle.objects.filter(url=url).first()
             if existing:
-                text = f"{existing.title}\n\n{existing.summary}\n\n{existing.content}"
+                text = f"Title: {existing.title}\n\nSummary: {existing.summary}\n\nContent: {existing.content}"
                 article_title = existing.title
                 article_source = existing.get_source_display()
             else:
                 try:
                     resp = requests.get(url, timeout=5, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
                     if resp.status_code == 200:
-                        # Extract title and plain text
                         title_match = re.search(r'<title>(.*?)</title>', resp.text, re.IGNORECASE)
                         if title_match:
                             article_title = title_match.group(1).strip()
-                        # Strip HTML tags
-                        clean_text = re.sub(r'<script.*?</script>', '', resp.text, flags=re.DOTALL)
-                        clean_text = re.sub(r'<style.*?</style>', '', clean_text, flags=re.DOTALL)
-                        clean_text = re.sub(r'<.*?>', ' ', clean_text)
-                        clean_text = ' '.join(clean_text.split())
-                        text = clean_text[:4000]
+                        clean = re.sub(r'<script.*?</script>', '', resp.text, flags=re.DOTALL)
+                        clean = re.sub(r'<style.*?</style>', '', clean, flags=re.DOTALL)
+                        clean = re.sub(r'<.*?>', ' ', clean)
+                        text = ' '.join(clean.split())[:4000]
                         article_source = urlparse(url).netloc
-                except Exception:
-                    text = f"External briefing retrieved from {url}. Content processing active."
+                except Exception as e:
+                    logger.warning(f"Error fetching URL {url}: {e}")
+                    text = f"External dispatch from {url}."
 
-        if not text.strip():
-            text = "No content provided for autonomous synthesis."
-
-        cleaned_text = ' '.join(text.split())
-        sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', cleaned_text) if len(s.strip()) > 15]
-
-        if not sentences:
-            sentences = [cleaned_text]
+        cleaned_text = ' '.join((text or '').split())
+        if not cleaned_text:
+            cleaned_text = "No article content provided for analysis."
 
         original_word_count = len(cleaned_text.split())
 
-        if format_type == 'short':
-            summary_content = self._generate_short_summary(sentences, article_title)
-        elif format_type == 'detailed':
-            summary_content = self._generate_detailed_summary(sentences, article_title, article_source)
-        else: # keypoints
-            summary_content = self._generate_keypoints(sentences, article_title)
+        # 2. Build Groq LLM Prompt
+        system_prompt = (
+            "You are an expert intelligence analyst for TRENDORA.\n"
+            "Your task is to summarize the provided news article accurately, clearly, and concisely.\n"
+            "STRICT RULES:\n"
+            "1. Base your summary ONLY on the facts explicitly mentioned in the provided text.\n"
+            "2. Do NOT extrapolate, hallucinate, or add external unsupported claims.\n"
+            "3. Maintain an objective, high-conviction intelligence tone.\n"
+        )
 
-        summary_word_count = len(summary_content.split())
-        compression_ratio = max(10, min(90, int((1 - (summary_word_count / max(original_word_count, 1))) * 100)))
+        if format_type == 'short':
+            format_prompt = (
+                "Format requirement: SHORT SUMMARY.\n"
+                "Provide a concise executive summary in 2 to 3 bullet points, followed by a one-sentence Strategic Horizon takeaway.\n"
+                "Heading format: **Executive Synthesis: <Title>**\n"
+            )
+        elif format_type == 'detailed':
+            format_prompt = (
+                "Format requirement: DETAILED STRATEGIC BRIEFING.\n"
+                "Provide a comprehensive structured report with 4 distinct sections:\n"
+                "### Comprehensive Intelligence Report: <Title>\n"
+                "#### 1. Context & Core Catalyst\n"
+                "#### 2. Direct Operational & Technological Impact\n"
+                "#### 3. Macroeconomic & Horizon Implications\n"
+                "#### 4. Trendora Risk & Velocity Projection\n"
+            )
+        else: # keypoints
+            format_prompt = (
+                "Format requirement: IMPORTANT KEY POINTS.\n"
+                "Extract 4 to 6 distinct, numbered bullet points with bold headlines highlighting the most critical facts, numbers, and findings.\n"
+                "Heading format: **Key Strategic Intelligence Vectors: <Title>**\n"
+            )
+
+        user_prompt = (
+            f"{format_prompt}\n"
+            f"SOURCE ARTICLE CONTENT:\n"
+            f"\"\"\"\n{cleaned_text[:4000]}\n\"\"\"\n\n"
+            f"Generate the grounded {format_type} summary now."
+        )
+
+        # 3. Call Groq LLM
+        summary_text = self.groq_service.generate(
+            prompt=user_prompt,
+            system_prompt=system_prompt,
+            temperature=0.2,
+            max_tokens=1200
+        )
+
+        summary_word_count = len(summary_text.split())
+        saved_pct = max(10, min(85, int((1 - (summary_word_count / max(original_word_count, 1))) * 100)))
+
+        format_labels = {
+            'short': 'Short Executive Summary',
+            'detailed': 'Detailed Strategic Briefing',
+            'keypoints': 'Actionable Key Points'
+        }
+
+        # Convert markdown formatting to clean HTML for innerHTML display
+        html_summary = summary_text.replace('\n\n', '<br><br>').replace('\n', '<br>')
+        html_summary = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html_summary)
+        html_summary = re.sub(r'\*(.*?)\*', r'<em>\1</em>', html_summary)
+        html_summary = re.sub(r'### (.*?)<br>', r'<h3 style="color:var(--purple-light); margin:0.8rem 0 0.4rem;">\1</h3>', html_summary)
+        html_summary = re.sub(r'#### (.*?)<br>', r'<h4 style="color:var(--text-primary); margin:0.6rem 0 0.3rem;">\1</h4>', html_summary)
 
         return {
             'status': 'success',
             'format': format_type,
+            'format_label': format_labels.get(format_type, 'Summary Briefing'),
             'title': article_title,
             'source': article_source,
             'original_word_count': original_word_count,
             'summary_word_count': summary_word_count,
-            'compression_ratio': f"{compression_ratio}% reduction",
-            'estimated_read_time': f"{max(1, summary_word_count // 150)} min read",
-            'summary': summary_content,
+            'words_original': original_word_count,
+            'words_summary': summary_word_count,
+            'saved_percentage': saved_pct,
+            'compression_ratio': f"{saved_pct}% reduction",
+            'estimated_read_time': f"{max(1, summary_word_count // 140)} min read",
+            'summary': html_summary,
+            'raw_summary': summary_text,
         }
-
-    def _generate_short_summary(self, sentences, title):
-        selected = sentences[:3]
-        bullets = "\n\n".join([f"• {s}" for s in selected])
-        return (
-            f"**Executive Synthesis: {title}**\n\n"
-            f"{bullets}\n\n"
-            f"Strategic Takeaway: High-conviction operational impact observed across related sectors with minimal signal degradation."
-        )
-
-    def _generate_detailed_summary(self, sentences, title, source):
-        part1 = " ".join(sentences[:2]) if len(sentences) >= 2 else sentences[0]
-        part2 = " ".join(sentences[2:5]) if len(sentences) >= 5 else " ".join(sentences[1:3]) if len(sentences) >= 3 else part1
-        part3 = " ".join(sentences[5:8]) if len(sentences) >= 8 else sentences[-1]
-
-        return (
-            f"### Comprehensive Intelligence Report: {title}\n"
-            f"**Source Telemetry**: {source} | **Classification**: Strategic Synthesis\n\n"
-            f"#### 1. Context & Core Catalyst\n{part1}\n\n"
-            f"#### 2. Direct Operational & Technological Impact\n{part2}\n\n"
-            f"#### 3. Macroeconomic & Horizon Implications\n{part3}\n\n"
-            f"#### 4. Trendora Risk & Velocity Projection\n"
-            f"Continuous telemetry confirms accelerating adoption momentum. Cross-asset correlation index indicates heightened sensitivity among early-stage adopters and regulatory observation units."
-        )
-
-    def _generate_keypoints(self, sentences, title):
-        points = []
-        for i, s in enumerate(sentences[:6]):
-            points.append(f"• **Point 0{i+1}**: {s}")
-
-        if len(points) < 3:
-            points.append("• **Point 02**: Accelerating signal velocity observed across institutional surveillance channels.")
-            points.append("• **Point 03**: Cross-verified against global baseline sentiment and risk tolerance indexes.")
-
-        return (
-            f"**Key Strategic Intelligence Vectors: {title}**\n\n"
-            + "\n".join(points)
-        )

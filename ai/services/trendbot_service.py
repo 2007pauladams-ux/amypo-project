@@ -1,163 +1,127 @@
 import re
-from django.utils import timezone
-from news.models import NewsArticle, NewsCategory
+import logging
+from .rag_service import RagPipeline
+from news.models import NewsCategory
 from trends.models import TrendingTopic
+
+logger = logging.getLogger('trendora.trendbot')
 
 class TrendBotService:
     """
-    Interactive AI assistant for TRENDORA.
-    Synthesizes conversational intelligence from real-time database dispatches
-    and calculated trend models.
+    TrendBot conversational intelligence service for TRENDORA.
+    Orchestrates user inquiries through the RAG pipeline, retrieves relevant
+    dispatches from FAISS, generates grounded citations via Groq LLM,
+    and returns rich responses for the chat interface.
     """
 
-    def process_message(self, user_message, user=None):
-        msg = (user_message or '').strip().lower()
+    def __init__(self, rag_pipeline=None):
+        self.rag = rag_pipeline or RagPipeline()
 
+    def process_message(self, user_message, user=None, conversation_history=None):
+        """
+        Processes a natural language query through the RAG pipeline.
+        Returns a structured dictionary with HTML reply, raw reply, citations, and suggestions.
+        """
+        msg = (user_message or '').strip()
+
+        # Handle empty query
         if not msg:
             return {
-                'response': "Greetings Analyst. I am TrendBot, TRENDORA's autonomous real-time intelligence assistant. Ask me about top tech trends, breaking dispatches, market momentum, or query specific keywords.",
+                'reply': "Greetings Analyst. I am TrendBot, TRENDORA's autonomous real-time intelligence assistant. Ask me questions regarding latest technology breakthroughs, macroeconomic shifts, or query specific subjects.",
+                'raw_reply': "Greetings Analyst. I am TrendBot.",
+                'citations': [],
                 'suggestions': [
                     "What are today's top technology trends?",
-                    "Summarize the latest business news.",
+                    "Summarize recent semiconductor breakthroughs",
                     "What is happening in quantum computing?",
                     "Show breaking dispatches"
                 ]
             }
 
-        # Query Database for live state
-        top_trends = list(TrendingTopic.objects.all().order_by('-calculated_score', '-velocity_percentage')[:5])
-        latest_articles = list(NewsArticle.objects.all().order_by('-published_at')[:6])
-
-        # 1. Tech Trends Query
-        if any(w in msg for w in ['tech', 'technology', 'trends', 'top trend', 'popular']):
-            tech_cat = NewsCategory.objects.filter(slug='technology').first()
-            tech_trends = TrendingTopic.objects.filter(category__slug='technology').order_by('-calculated_score')[:4]
-            if not tech_trends:
-                tech_trends = top_trends[:4]
-
-            lines = ["Here are today's highest-velocity technology intelligence trends:"]
-            for idx, t in enumerate(tech_trends, 1):
-                lines.append(f"**{idx}. {t.title}**")
-                lines.append(f"• **Momentum**: {t.velocity_percentage:+d}% acceleration | **Score**: {t.calculated_score}/100")
-                lines.append(f"• **Telemetry**: {t.volume_mentions:,} tracked mentions across {t.article_count} dispatches.")
-                if t.summary:
-                    lines.append(f"• *Briefing*: {t.summary}")
-                lines.append("")
-
-            related_art = NewsArticle.objects.filter(category__slug='technology').first()
-            if related_art:
-                lines.append(f"🔍 **Featured Dispatch**: *{related_art.title}* ({related_art.get_source_display()}) — Impact Index: {related_art.impact_score}/100.")
-
+        # Check for simple greetings
+        if msg.lower() in ('hello', 'hi', 'hey', 'greetings', 'help'):
+            top_trends = list(TrendingTopic.objects.all().order_by('-calculated_score')[:3])
+            trend_names = ", ".join([f"**{t.title}** (+{t.velocity_percentage}%)" for t in top_trends])
+            greeting = (
+                f"Analyst terminal connected. TrendBot is actively monitoring 48,000+ signals. "
+                f"Currently, top velocity indicators are concentrated in {trend_names or 'frontier computing'}.\n\n"
+                f"What intelligence vector would you like to investigate?"
+            )
             return {
-                'response': "\n".join(lines),
+                'reply': greeting.replace('\n\n', '<br><br>'),
+                'raw_reply': greeting,
+                'citations': [],
                 'suggestions': [
-                    "Deep-dive into Autonomous AI Agents",
-                    "Summarize semiconductor fab progress",
-                    "What are the top business headlines?",
-                ]
-            }
-
-        # 2. Business & Economy Query
-        elif any(w in msg for w in ['business', 'market', 'economy', 'financial', 'fed', 'stock']):
-            biz_articles = list(NewsArticle.objects.filter(category__slug='business').order_by('-published_at')[:3])
-            if not biz_articles:
-                biz_articles = latest_articles[:3]
-
-            lines = ["**Macroeconomic & Financial Intelligence Briefing:**\n"]
-            for a in biz_articles:
-                lines.append(f"• **{a.title}**")
-                lines.append(f"  *Source*: {a.get_source_display()} | *Sentiment*: {a.sentiment} | *Velocity*: {a.velocity_score}")
-                lines.append(f"  *Executive Summary*: {a.summary[:180]}...")
-                lines.append("")
-
-            lines.append("Key Takeaway: Capital markets are showing concentrated liquidity rotation toward sovereign atomic settlement and infrastructure efficiency.")
-            return {
-                'response': "\n".join(lines),
-                'suggestions': [
+                    "What are today's top technology trends?",
+                    "Summarize recent semiconductor breakthroughs",
                     "Explain sovereign digital reserves",
-                    "Show latest technology headlines",
-                    "What is trending in clean energy?",
                 ]
             }
 
-        # 3. Quantum Computing & AI
-        elif any(w in msg for w in ['quantum', 'computing', 'ai', 'agent', 'model']):
-            q_articles = list(NewsArticle.objects.filter(title__icontains='quantum').order_by('-published_at')[:2])
-            ai_articles = list(NewsArticle.objects.filter(title__icontains='ai').order_by('-published_at')[:2])
-            matched = q_articles + ai_articles
-            if not matched:
-                matched = latest_articles[:3]
+        # Run through RAG Pipeline
+        try:
+            rag_result = self.rag.run_rag(
+                query=msg,
+                top_k=4,
+                conversation_history=conversation_history
+            )
 
-            lines = ["**Frontier AI & Quantum Computing Intelligence:**\n"]
-            for a in matched:
-                lines.append(f"• **{a.title}** ({a.get_source_display()})")
-                lines.append(f"  Impact Rating: {a.impact_score}/100 | Recency: {a.get_time_ago()}")
-                lines.append(f"  {a.summary}")
-                lines.append("")
+            raw_answer = rag_result.get('answer', '')
+            citations = rag_result.get('citations', [])
 
-            lines.append("Trendora Assessment: Hardware-software co-design between photonic quantum processors and multi-agent coordination frameworks is operating at peak inflection velocity.")
+            # Format raw markdown answer into HTML for chat bubbles
+            html_reply = raw_answer.replace('\n\n', '<br><br>').replace('\n', '<br>')
+            html_reply = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html_reply)
+            html_reply = re.sub(r'\*(.*?)\*', r'<em>\1</em>', html_reply)
+            html_reply = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2" target="_blank" style="color:var(--cyan-accent); text-decoration:underline;">\1</a>', html_reply)
+
+            # Generate smart suggestions based on retrieved categories or topics
+            suggestions = self._generate_suggestions(msg, citations)
+
             return {
-                'response': "\n".join(lines),
+                'reply': html_reply,
+                'raw_reply': raw_answer,
+                'citations': citations,
+                'suggestions': suggestions,
+                'context_count': rag_result.get('context_count', 0),
+            }
+
+        except Exception as e:
+            logger.error(f"Error in TrendBot RAG execution: {e}", exc_info=True)
+            fallback_msg = (
+                "An anomaly occurred in the intelligence telemetry buffer. "
+                "The core neural inference pipeline is reconnecting to the primary wire. "
+                "Please retry your inquiry in a few seconds."
+            )
+            return {
+                'reply': fallback_msg,
+                'raw_reply': fallback_msg,
+                'citations': [],
                 'suggestions': [
                     "What are today's top technology trends?",
-                    "How are solid-state batteries progressing?",
                     "Show breaking dispatches",
                 ]
             }
 
-        # 4. Breaking news dispatches
-        elif any(w in msg for w in ['breaking', 'headline', 'latest', 'news', 'recent']):
-            breaking = NewsArticle.objects.filter(is_breaking=True).order_by('-published_at')[:4]
-            if not breaking:
-                breaking = latest_articles[:4]
-
-            lines = ["**Live Breaking Dispatches on the Grid:**\n"]
-            for a in breaking:
-                lines.append(f"⚡ **[{a.category.name.upper() if a.category else 'INTEL'}]** {a.title}")
-                lines.append(f"   Wire: {a.get_source_display()} | Logged: {a.get_time_ago()} | Velocity: {a.velocity_score}")
-                lines.append("")
-
-            return {
-                'response': "\n".join(lines),
-                'suggestions': [
-                    "Summarize top technology dispatch",
-                    "What are today's top trends?",
-                    "Analyze market sentiment",
-                ]
-            }
-
-        # 5. General or Keyword Search fallback
+    def _generate_suggestions(self, query, citations):
+        """Generates dynamic follow-up suggestions based on query keywords or citations."""
+        suggestions = []
+        if citations:
+            first_cit = citations[0]['title']
+            suggestions.append(f"Deep-dive into {first_cit[:35]}...")
+        
+        low = query.lower()
+        if 'ai' in low or 'agent' in low:
+            suggestions.append("What are the hardware bottlenecks for autonomous agents?")
+            suggestions.append("Summarize semiconductor fab progress")
+        elif 'quantum' in low:
+            suggestions.append("Explain quantum error correction milestones")
+            suggestions.append("What are top science trends?")
+        elif 'business' in low or 'market' in low:
+            suggestions.append("What are sovereign digital reserve trends?")
+            suggestions.append("Show breaking financial dispatches")
         else:
-            # Search database for keyword matches
-            words = [w for w in re.findall(r'\w+', msg) if len(w) > 3]
-            query_match = None
-            for w in words:
-                query_match = NewsArticle.objects.filter(title__icontains=w).first()
-                if query_match:
-                    break
+            suggestions.append("What are today's top technology trends?")
+            suggestions.append("Summarize breaking news dispatches")
 
-            if query_match:
-                response_text = (
-                    f"**Intelligence telemetry for '{msg}':**\n\n"
-                    f"Found primary match in dispatch: **{query_match.title}**\n"
-                    f"• **Source**: {query_match.get_source_display()} ({query_match.get_time_ago()})\n"
-                    f"• **Impact Index**: {query_match.impact_score}/100 | **Sentiment**: {query_match.sentiment}\n"
-                    f"• **Summary**: {query_match.summary}\n\n"
-                    f"Would you like me to generate a full executive briefing or track this topic's trajectory?"
-                )
-            else:
-                top_3_str = ", ".join([f"**{t.title}** ({t.velocity_percentage:+d}%)" for t in top_trends[:3]])
-                response_text = (
-                    f"Analyst inquiry received: *\"{user_message}\"*\n\n"
-                    f"TRENDORA is actively indexing 48,000+ real-time telemetry points. Currently, top momentum indicators are concentrated in {top_3_str}.\n\n"
-                    f"You can ask me to summarize specific subjects, scan breaking dispatches, or evaluate sentiment across Technology, Business, Politics, Science, Sports, and Entertainment."
-                )
-
-            return {
-                'response': response_text,
-                'suggestions': [
-                    "What are today's top technology trends?",
-                    "Summarize the latest business news.",
-                    "Show breaking dispatches",
-                ]
-            }
+        return suggestions[:3]

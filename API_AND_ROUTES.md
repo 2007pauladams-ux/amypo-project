@@ -177,7 +177,7 @@ Located in `templates/components/`:
   }
   ```
 
-### F. AI News Summarizer
+### F. AI News Summarizer (Powered by Groq LLM)
 - **Endpoint**: `POST /api/summarize/`
 - **Request Body (JSON)**:
   ```json
@@ -197,16 +197,18 @@ Located in `templates/components/`:
     "words_original": 240,
     "words_summary": 75,
     "summary": "<strong>Executive Synthesis: ...</strong><br><br>• Key point 1...",
+    "raw_summary": "Plain text summary...",
     "estimated_read_time": "1 min read"
   }
   ```
 
-### G. TrendBot Chatbot Query
+### G. TrendBot Chatbot Query (Powered by RAG Pipeline)
 - **Endpoint**: `POST /api/chat/`
 - **Request Body (JSON)**:
   ```json
   {
-    "message": "What are today's top technology trends?"
+    "message": "What are today's top technology trends?",
+    "history": []
   }
   ```
 - **Response Format**:
@@ -214,15 +216,97 @@ Located in `templates/components/`:
   {
     "status": "success",
     "reply": "Here are today's highest-velocity technology intelligence trends:<br><br><strong>1. Autonomous AI Agents</strong>...",
+    "raw_reply": "Plain text answer...",
+    "citations": [
+      {
+        "id": 1,
+        "title": "Autonomous Multi-Agent Networks Surpass Human Engineering Velocity",
+        "slug": "autonomous-multi-agent-networks-surpass-human-velocity",
+        "source_name": "MIT Technology Review",
+        "url": "https://intel.trendora.io/dispatches/autonomous-multi-agent-networks",
+        "similarity_score": 0.892,
+        "impact_score": 98
+      }
+    ],
     "suggestions": [
       "Deep-dive into Autonomous AI Agents",
       "Summarize semiconductor fab progress",
       "What are the top business headlines?"
-    ]
+    ],
+    "context_count": 2
   }
   ```
 
-### H. Simulated Signal Influx
+### H. Direct RAG Retrieval & Question Answering
+- **Endpoint**: `POST /api/rag/`
+- **Request Body (JSON)**:
+  ```json
+  {
+    "query": "Quantum error correction milestones",
+    "top_k": 3
+  }
+  ```
+- **Response Format**:
+  ```json
+  {
+    "status": "success",
+    "answer": "Grounded synthesis citing retrieved articles...",
+    "citations": [...],
+    "context_count": 3,
+    "query": "Quantum error correction milestones"
+  }
+  ```
+
+### I. Sentiment Analysis
+- **Endpoint**: `POST /api/sentiment/`
+- **Request Body (JSON)**:
+  ```json
+  {
+    "article_id": 1
+  }
+  ```
+- **Response Format**:
+  ```json
+  {
+    "status": "success",
+    "article_id": 1,
+    "article_title": "Autonomous Multi-Agent Networks...",
+    "sentiment": "BULLISH",
+    "confidence": 0.94,
+    "explanation": "Detected technological milestone and efficiency indicators.",
+    "disclaimer": "Analytical Disclaimer: Sentiment classification reflects reporting tone..."
+  }
+  ```
+
+### J. AI Thematic Trend Intelligence
+- **Endpoint**: `GET /api/trends/intelligence/?topic=autonomous-ai-agents`
+- **Response Format**:
+  ```json
+  {
+    "status": "success",
+    "topic_title": "Autonomous AI Agents",
+    "topic_slug": "autonomous-ai-agents",
+    "thematic_explanation": "Accelerating development driven by...",
+    "key_entities": ["Autonomous Agents", "Consortia"],
+    "observed_evidence": "Tracked across 4 verified dispatches with +340% velocity.",
+    "forward_horizon": "Expected transition to volume commercial deployment...",
+    "risk_factors": "Manufacturing bottlenecks and regulatory standards.",
+    "supporting_articles": [...]
+  }
+  ```
+
+### K. FAISS Vector Re-indexing
+- **Endpoint**: `POST /api/faiss/reindex/`
+- **Response Format**:
+  ```json
+  {
+    "status": "success",
+    "message": "FAISS index rebuilt with 17 documents.",
+    "total_indexed": 17
+  }
+  ```
+
+### L. Simulated Signal Influx
 - **Endpoint**: `GET /api/simulate-signal/`
 - **Response Format**:
   ```json

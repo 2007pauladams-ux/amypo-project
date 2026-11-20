@@ -121,5 +121,17 @@ DEFAULT_COUNTRY = os.getenv('DEFAULT_COUNTRY', 'us')
 COLLECTION_INTERVAL_HOURS = int(os.getenv('COLLECTION_INTERVAL_HOURS', '2'))
 DEFAULT_PAGE_SIZE = int(os.getenv('DEFAULT_PAGE_SIZE', '12'))
 
+# Groq LLM API Configuration
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
+GROQ_TEMPERATURE = float(os.getenv('GROQ_TEMPERATURE', '0.2'))
+GROQ_MAX_TOKENS = int(os.getenv('GROQ_MAX_TOKENS', '2048'))
+
+# Sentence Transformers & FAISS Vector Store Settings
+EMBEDDING_MODEL_NAME = os.getenv('EMBEDDING_MODEL_NAME', 'all-MiniLM-L6-v2')
+FAISS_STORAGE_DIR = BASE_DIR / 'data' / 'faiss'
+FAISS_INDEX_PATH = FAISS_STORAGE_DIR / 'articles_index.faiss'
+FAISS_METADATA_PATH = FAISS_STORAGE_DIR / 'articles_metadata.json'
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

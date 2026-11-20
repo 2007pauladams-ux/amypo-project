@@ -1,0 +1,32 @@
+{
+  "id_to_article_id": [
+    2,
+    1
+  ],
+  "metadata_store": {
+    "2": {
+      "id": 2,
+      "title": "Global Semiconductor Consortium Unveils 1-Nanometer High-NA EUV Commercial Roadmap",
+      "slug": "semiconductor-1nm-high-na-euv-roadmap",
+      "source_name": "Frontier Systems Wire",
+      "source_domain": "frontier.intel",
+      "url": "https://intel.trendora.io/dispatches/semiconductor-1nm-roadmap",
+      "category_slug": "quantum-ai",
+      "category_name": "Quantum & Frontier AI",
+      "impact_score": 94,
+      "published_at": "2026-11-20T14:58:04.360370+00:00"
+    },
+    "1": {
+      "id": 1,
+      "title": "Autonomous AI Agents Achieve Multi-Model Quantum Orchestration Breakthrough",
+      "slug": "autonomous-ai-agents-quantum-orchestration",
+      "source_name": "Frontier Systems Wire",
+      "source_domain": "frontier.intel",
+      "url": "https://intel.trendora.io/dispatches/autonomous-ai-quantum-orchestration",
+      "category_slug": "quantum-ai",
+      "category_name": "Quantum & Frontier AI",
+      "impact_score": 98,
+      "published_at": "2026-11-20T14:58:04.359348+00:00"
+    }
+  }
+}
